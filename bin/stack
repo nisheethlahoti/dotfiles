@@ -1,0 +1,85 @@
+#!/bin/bash
+
+exists() {
+	test -f $file
+}
+
+should_exist() {
+	if !(exists)
+	then
+		echo "No such stack: $filename" >&2
+		exit 1
+	fi
+}
+
+should_not_exist() {
+	if exists
+	then
+		echo "Stack already exists: $filename" >&2
+		exit 1
+	fi
+}
+
+list() {
+	ls ~/.stacks
+}
+
+push() {
+	should_exist
+	echo $@ >> $file
+}
+
+pop() {
+	should_exist
+	if test -z "$1"
+	then
+		num=1
+	else
+		num=$(("$1"))
+	fi
+
+	if test $num -eq 0 || { echo "$num" | grep -qe "-"; }
+	then
+		echo "Invalid value of lines to pop." >&2
+		exit 1
+	fi
+
+	tac "$file" | head -n $((num)) &&
+	echo -e '$-'$((num-1))',$d\nw' | ed -s $file 2> /dev/null
+}
+
+show() {
+	should_exist
+	tac $file
+}
+
+top() {
+	should_exist
+	tail -n 1 $file
+}
+
+create() {
+	should_not_exist
+	touch $file
+}
+
+delete() {
+	should_exist
+	rm -f $file
+}
+
+if test -z "$(echo \"$@\" | grep -Ee '\s-\s')"
+then
+	filename="default"
+else
+	filename=$(echo "$@" | sed -Ee "s/^.*\s-\s+(.*)$/\1/")
+fi
+
+file="$HOME/.stacks/$filename"
+if declare -f "$1" > /dev/null
+then
+	$(echo "$@" | sed -Ee "s/-\s+.*$//")
+else
+	echo "Command not found: $1" >&2
+	exit 1
+fi
