@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sanitize() {
-	echo $1 | sed -Ee "s@$PWD@~@"
+	echo $1 | sed -Ee "s@$PWD@$HOME@"
 }
 
 find $PWD -type d | grep -vEe "\.git" | while read line
