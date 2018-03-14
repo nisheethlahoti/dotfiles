@@ -46,17 +46,21 @@ command -nargs=? -complete=file E vert new <args>
 command -nargs=? -complete=help H vert h <args>
 command Term vsplit | term
 
-" Clipboard cut, copy and paste
-noremap - "+
-
 " Treat <Del> as delete rather than cut
 noremap <Del> "_x
 
 " Convert binary file to readable bytes output and vice-versa
-if &binary
-	noremap <Leader>b :%!xxd<CR>
-	noremap <Leader>t :%!xxd -r<CR>
-endif
+function Xxd()
+	if &binary
+		%!xxd
+		set nobinary
+	else
+		%!xxd -r
+		set binary
+	endif
+endfunction
+
+noremap <Leader>x :call Xxd()<CR>
 
 " Text file editing
 au FileType text set wrap
