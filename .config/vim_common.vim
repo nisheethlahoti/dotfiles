@@ -55,8 +55,8 @@ function Xxd()
 		%!xxd
 		set nobinary
 	else
-		%!xxd -r
 		set binary
+		%!xxd -r
 	endif
 endfunction
 
