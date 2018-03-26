@@ -86,11 +86,6 @@ au ColorScheme * highlight Folded ctermfg=15 ctermbg=17
 " Paths of vim configuration files
 let $COMMONRC = "~/.config/vim_common.vim"
 
-" For ale plugin
-let g:ale_linters = {'rust': ['cargo'], 'cpp': [], 'c': []}
-nnoremap <A-j> :ALENextWrap<CR>
-nnoremap <A-k> :ALEPreviousWrap<CR>
-
 " For Rust plugin
 let g:rustc_path = $HOME."/.cargo/bin/rustc"  " Path to rustc
 let g:autofmt_autosave = 1                    " Run rustfmt on each save
@@ -98,18 +93,31 @@ let g:autofmt_autosave = 1                    " Run rustfmt on each save
 " For fugitive plugin
 set diffopt+=vertical     " Always opens diffs vertically
 
-" Goto Definition/declaration/include/whatever
-nnoremap gd :YcmCompleter GoTo<CR>
+" For LanguageClient
+let g:LanguageClient_autoStart = 1
+nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
+nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
+nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
+let g:LanguageClient_autoStart = 1
+let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
+let g:LanguageClient_serverCommands = {
+	\ 'rust': ['rls'],
+	\ 'cpp': ['cquery', '--language-server', '--log-file=/tmp/cf.log', '--log-stdin-stdout-to-stderr'
+\ ]}
 
 " Specify vim-airline theme
 let g:airline_theme='papercolor'
 
+" For deoplete (plus autocompleting with tab)
+let g:deoplete#enable_at_startup = 1
+inoremap <expr><Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
 " Plugins
 call plug#begin('~/.vim/plugged')
 	" General
-	Plug 'valloric/YouCompleteMe'     " Code completion + GoTo def + checking
+	Plug 'Shougo/deoplete.nvim'       " Asynchronous completion framework
 	Plug 'honza/vim-snippets'         " Automatic sections of code to be filled in
-	Plug 'w0rp/ale'                   " Linting.
 	Plug 'Shougo/vimproc.vim'         " Used for ghcmod-vim
 	Plug 'tpope/vim-fugitive'         " Git usage integration
 	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
@@ -118,6 +126,7 @@ call plug#begin('~/.vim/plugged')
 	Plug 'vim-scripts/IndexedSearch'  " Shows (m out of n matches) for searches
 	Plug 'vim-airline/vim-airline'    " Better status line
 	Plug 'vim-airline/vim-airline-themes'
+	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
 
 	" Language-specific
 	Plug 'eagletmt/neco-ghc'
@@ -133,7 +142,6 @@ au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
 au FileType rust noremap <Leader>f :RustFmt<CR>
 
 " Linting
-au FileType c,cpp noremap <Leader>l :YcmCompleter FixIt<CR>
 au FileType haskell noremap <Leader>l :exe '%! hlint - --refactor --refactor-options="--pos '.line('.').','.col('.').'"'<CR>
 
 " Rust running and compiling
