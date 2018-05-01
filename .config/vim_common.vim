@@ -143,7 +143,7 @@ call plug#end()
 " Filetype-specific formatting mappings
 au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
 au FileType rust noremap <Leader>f :RustFmt<CR>
-au FileType python noremap <Leader>f :%!autopep8 -<CR>
+au FileType python noremap <Leader>f :%!yapf -<CR>
 
 " Linting
 au FileType haskell noremap <Leader>l :exe '%! hlint - --refactor --refactor-options="--pos '.line('.').','.col('.').'"'<CR>
