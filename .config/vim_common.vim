@@ -118,7 +118,7 @@ inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 " Plugins
 call plug#begin('~/.vim/plugged')
 	" General
-	Plug 'Shougo/deoplete.nvim'       " Asynchronous completion framework
+	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
 	Plug 'honza/vim-snippets'         " Automatic sections of code to be filled in
 	Plug 'Shougo/vimproc.vim'         " Used for ghcmod-vim
 	Plug 'tpope/vim-fugitive'         " Git usage integration
