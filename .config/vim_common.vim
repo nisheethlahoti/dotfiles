@@ -102,14 +102,16 @@ let g:LanguageClient_autoStart = 1
 let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
 let g:LanguageClient_serverCommands = {
 	\ 'rust': ['rls'],
-	\ 'cpp': ['cquery', '--language-server', '--log-file=/tmp/cf.log', '--log-stdin-stdout-to-stderr'
-\ ]}
+	\ 'cpp': ['cquery', '--language-server', '--log-file=/tmp/cf.log', '--log-stdin-stdout-to-stderr'],
+	\ 'python': ['pyls']
+\ }
 
 " Specify vim-airline theme
 let g:airline_theme='papercolor'
 
 " For deoplete (plus autocompleting with tab)
 let g:deoplete#enable_at_startup = 1
+let g:deoplete#enable_refresh_always = 1
 inoremap <expr><Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
@@ -122,6 +124,7 @@ call plug#begin('~/.vim/plugged')
 	Plug 'tpope/vim-fugitive'         " Git usage integration
 	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
 	Plug 'scrooloose/nerdcommenter'   " Commenting out code
+	Plug 'tpope/vim-vinegar'          " Browsing files
 	Plug 'vim-scripts/ingo-library'   " Common functions for vimscript
 	Plug 'vim-scripts/IndexedSearch'  " Shows (m out of n matches) for searches
 	Plug 'vim-airline/vim-airline'    " Better status line
@@ -140,6 +143,7 @@ call plug#end()
 " Filetype-specific formatting mappings
 au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
 au FileType rust noremap <Leader>f :RustFmt<CR>
+au FileType python noremap <Leader>f :%!autopep8 -<CR>
 
 " Linting
 au FileType haskell noremap <Leader>l :exe '%! hlint - --refactor --refactor-options="--pos '.line('.').','.col('.').'"'<CR>
@@ -147,4 +151,4 @@ au FileType haskell noremap <Leader>l :exe '%! hlint - --refactor --refactor-opt
 " Rust running and compiling
 au FileType rust noremap <Leader>r :!cargo run<CR>
 au FileType rust noremap <Leader>t :!cargo test<CR>
-au FileType rust noremap <Leader>b :!cargo build<CR>
+au FileType rust noremap <Leader>c :!cargo clippy<CR>
