@@ -1,85 +1,40 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-exists() {
-	test -f $file
-}
+import os
+from argparse import ArgumentParser
 
-should_exist() {
-	if !(exists)
-	then
-		echo "No such stack: $filename" >&2
-		exit 1
-	fi
-}
+BASE_DIR = os.path.join(os.getenv('HOME'), '.stacks')
+P_HELP = 'Pop N items (default 1)'
+S_HELP = 'Show N items (default all)'
 
-should_not_exist() {
-	if exists
-	then
-		echo "Stack already exists: $filename" >&2
-		exit 1
-	fi
-}
+parser = ArgumentParser(description='Single-line-note-taking utility for the command line')
+parser.add_argument('--base_dir', default=BASE_DIR, help='Location of stacks (default ~/.stacks)')
+parser.add_argument('stack', nargs='?', default='default', help='Name of stack (default "default")')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--push', metavar='VAL', nargs='+', help='Push subsequent items one by one')
+group.add_argument('--pop', metavar='N', type=int, const='1', nargs='?', help=P_HELP)
+group.add_argument('--show', metavar='N', type=int, default='0', const=None, nargs='?', help=S_HELP)
+group.add_argument('--create', action='store_true', help='Create a new stack')
+group.add_argument('--delete', action='store_true', help='Delete an existing stack')
+group.add_argument('--list', action='store_true', help='List all stacks')
+args = parser.parse_args()
 
-list() {
-	ls ~/.stacks
-}
+if args.list:
+    print(os.listdir(args.base_dir))
+    exit(0)
 
-push() {
-	should_exist
-	echo $@ >> $file
-}
+spath = os.path.join(args.base_dir, args.stack)
+if args.create:
+    with open(spath, 'x'):
+        pass
+elif args.delete:
+    os.remove(spath)
+else:
+    with open(spath, 'r') as stack:
+        lines = stack.readlines()
 
-pop() {
-	should_exist
-	if test -z "$1"
-	then
-		num=1
-	else
-		num=$(("$1"))
-	fi
-
-	if test $num -eq 0 || { echo "$num" | grep -qe "-"; }
-	then
-		echo "Invalid value of lines to pop." >&2
-		exit 1
-	fi
-
-	tac "$file" | head -n $((num)) &&
-	echo -e '$-'$((num-1))',$d\nw' | ed -s $file 2> /dev/null
-}
-
-show() {
-	should_exist
-	tac $file
-}
-
-top() {
-	should_exist
-	tail -n 1 $file
-}
-
-create() {
-	should_not_exist
-	touch $file
-}
-
-delete() {
-	should_exist
-	rm -f $file
-}
-
-if test -z "$(echo \"$@\" | grep -Ee '\s-\s')"
-then
-	filename="default"
-else
-	filename=$(echo "$@" | sed -Ee "s/^.*\s-\s+(.*)$/\1/")
-fi
-
-file="$HOME/.stacks/$filename"
-if declare -f "$1" > /dev/null
-then
-	$(echo "$@" | sed -Ee "s/-\s+.*$//")
-else
-	echo "Command not found: $1" >&2
-	exit 1
-fi
+    print(''.join(lines[:args.pop or args.show]), end='')
+    if args.push:
+        open(spath, 'w').writelines([a + '\n' for a in args.push[::-1]] + lines)
+    elif args.pop:
+        open(spath, 'w').writelines(lines[args.pop:])
