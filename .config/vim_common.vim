@@ -13,7 +13,8 @@ set nowrap             " Disables word wrap
 set sidescroll=5       " Minimum number of characters to keep on screen
 set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
-set foldmethod=syntax  " Fold according to file syntax
+set nofoldenable       " Folds off by default
+set foldmethod=indent  " Fold according to file syntax
 colorscheme ron 
 
 " Visual movement with the arrows and End-Home 
@@ -86,6 +87,9 @@ au ColorScheme * highlight Folded ctermfg=15 ctermbg=17
 " Paths of vim configuration files
 let $COMMONRC = "~/.config/vim_common.vim"
 
+" For netrw (and hence vinegar)
+let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap number'
+
 " For Rust plugin
 let g:rustc_path = $HOME."/.cargo/bin/rustc"  " Path to rustc
 let g:autofmt_autosave = 1                    " Run rustfmt on each save
@@ -103,7 +107,7 @@ let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
 let g:LanguageClient_serverCommands = {
 	\ 'rust': ['rls'],
 	\ 'cpp': ['cquery', '--language-server', '--log-file=/tmp/cf.log', '--log-stdin-stdout-to-stderr'],
-	\ 'python': ['pyls']
+	\ 'python': ['pyls', '--log-file', '/tmp/pyls.log']
 \ }
 
 " Specify vim-airline theme
@@ -142,7 +146,7 @@ call plug#end()
 
 " Filetype-specific formatting mappings
 au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
-au FileType rust noremap <Leader>f :RustFmt<CR>
+au FileType rust noremap <Leader>f :%!rustfmt<CR>
 au FileType python noremap <Leader>f :%!yapf<CR>
 
 " Linting
