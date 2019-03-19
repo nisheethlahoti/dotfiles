@@ -143,3 +143,6 @@ if test -d ~/.cabal/bin
 then
 	export PATH="$HOME/.cabal/bin:$PATH"
 fi
+
+set -o vi
+source $HOME/miniconda3/etc/profile.d/conda.sh
