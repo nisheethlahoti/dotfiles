@@ -18,6 +18,7 @@ shopt -s histappend
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
 HISTSIZE=500000
 HISTFILESIZE=5000000
+PROMPT_COMMAND='history -a'
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -127,6 +128,14 @@ revlist() {
 
 revman() {
 	man -s $(revlist) $1
+}
+
+pvtar() {
+	tar -cf - "$1" | pv -s $(du -sb "$1" | awk '{print $1}')
+}
+
+pvcp() {
+	pvtar $1 | tar -xf - -C $2
 }
 
 if which rustc > /dev/null
