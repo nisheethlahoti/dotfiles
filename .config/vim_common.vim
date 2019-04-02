@@ -101,12 +101,13 @@ set diffopt+=vertical     " Always opens diffs vertically
 let g:LanguageClient_autoStart = 1
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
+nnoremap <silent> gr :call LanguageClient_textDocument_rename()<CR>
 let g:LanguageClient_autoStart = 1
+let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
 let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
 let g:LanguageClient_serverCommands = {
 	\ 'rust': ['rls'],
-	\ 'cpp': ['cquery', '--language-server', '--log-file=/tmp/cf.log', '--log-stdin-stdout-to-stderr'],
+	\ 'cpp': ['clangd'],
 	\ 'python': ['pyls', '--log-file', '/tmp/pyls.log']
 \ }
 
