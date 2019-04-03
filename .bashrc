@@ -155,3 +155,4 @@ fi
 
 set -o vi
 source $HOME/miniconda3/etc/profile.d/conda.sh
+alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
