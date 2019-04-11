@@ -108,6 +108,7 @@ let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
 let g:LanguageClient_serverCommands = {
 	\ 'rust': ['rls'],
 	\ 'cpp': ['clangd'],
+	\ 'c': ['clangd'],
 	\ 'python': ['pyls', '--log-file', '/tmp/pyls.log']
 \ }
 
@@ -121,7 +122,7 @@ inoremap <expr><Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " Plugins
-call plug#begin('~/.vim/plugged')
+call plug#begin('~/.vim_plug')
 	" General
 	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
 	Plug 'honza/vim-snippets'         " Automatic sections of code to be filled in
