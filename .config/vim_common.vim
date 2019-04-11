@@ -105,10 +105,11 @@ nnoremap <silent> gr :call LanguageClient_textDocument_rename()<CR>
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
 let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
+let c_cpp_ls = ['clangd', '-resource-dir=' . system('clang -print-resource-dir')[:-2]]
 let g:LanguageClient_serverCommands = {
 	\ 'rust': ['rls'],
-	\ 'cpp': ['clangd'],
-	\ 'c': ['clangd'],
+	\ 'cpp': c_cpp_ls,
+	\ 'c': c_cpp_ls,
 	\ 'python': ['pyls', '--log-file', '/tmp/pyls.log']
 \ }
 
