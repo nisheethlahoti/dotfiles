@@ -103,6 +103,7 @@ nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
 nnoremap <silent> gr :call LanguageClient_textDocument_rename()<CR>
 let g:LanguageClient_autoStart = 1
+let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
 let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
 let c_cpp_ls = ['clangd', '-resource-dir=' . system('clang -print-resource-dir')[:-2]]
@@ -116,17 +117,21 @@ let g:LanguageClient_serverCommands = {
 " Specify vim-airline theme
 let g:airline_theme='papercolor'
 
-" For deoplete (plus autocompleting with tab)
-let g:deoplete#enable_at_startup = 1
-let g:deoplete#enable_refresh_always = 1
-inoremap <expr><Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+" Functions for ncm2 and ultisnips
+au BufEnter * call ncm2#enable_for_buffer()
+au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})
+set completeopt=noinsert,menuone,noselect
+set keymodel=startsel,stopsel
+imap <silent><expr><CR> ncm2_ultisnips#expand_or("<CR>", 'n')
+let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
+let g:UltiSnipsJumpForwardTrigger = "<Tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<S-Tab>"
 
 " Plugins
 call plug#begin('~/.vim_plug')
 	" General
-	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
-	Plug 'honza/vim-snippets'         " Automatic sections of code to be filled in
+	Plug 'SirVer/ultisnips'           " Snippet manager
+	Plug 'honza/vim-snippets'         " List of snippets
 	Plug 'Shougo/vimproc.vim'         " Used for ghcmod-vim
 	Plug 'tpope/vim-fugitive'         " Git usage integration
 	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
@@ -138,12 +143,16 @@ call plug#begin('~/.vim_plug')
 	Plug 'vim-airline/vim-airline-themes'
 	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
 	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
+	Plug 'ncm2/ncm2'                  " Autocomplete
+	Plug 'ncm2/ncm2-ultisnips'        " Support of ultisnips with ncm2
+	Plug 'ncm2/ncm2-bufword'          " Adds words from current buffer to ncm2
+	Plug 'roxma/nvim-yarp'            " Dependency of ncm-2
 
 	" Language-specific
 	Plug 'eagletmt/neco-ghc'
 	Plug 'eagletmt/ghcmod-vim'
-	Plug 'Shougo/neco-vim'
-	Plug 'rust-lang/rust.vim'
+	Plug 'ncm2/ncm2-syntax' | Plug 'Shougo/neco-syntax'
+	Plug 'ncm2/ncm2-vim' | Plug 'Shougo/neco-vim'
 	Plug 'cespare/vim-toml'
 	Plug 'vlaadbrain/gnuplot.vim'
 call plug#end()
