@@ -136,6 +136,7 @@ call plug#begin('~/.vim_plug')
 	Plug 'vim-scripts/IndexedSearch'  " Shows (m out of n matches) for searches
 	Plug 'vim-airline/vim-airline'    " Better status line
 	Plug 'vim-airline/vim-airline-themes'
+	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
 	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
 
 	" Language-specific
