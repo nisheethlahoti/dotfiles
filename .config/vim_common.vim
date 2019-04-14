@@ -118,11 +118,35 @@ let g:LanguageClient_serverCommands = {
 let g:airline_theme='papercolor'
 
 " Functions for ncm2 and ultisnips
+func! CommonPrefix(words) abort  " Longest common prefix for list of strings. Aborts on empty list.
+	let base = a:words[0]
+	for prefix_len in range(len(base))
+		for word in a:words[1:]
+			if word[prefix_len] != base[prefix_len]
+				return base[:prefix_len][:-2]
+			endif
+		endfor
+	endfor
+	return base
+endfunction
+
+" If no dropdown list visible, returns a:keys. Else expands to common prefix
+" of list, if said prefix is longer than the sequence already typed.
+func! Ncm2ExpandCommonOr(keys)
+	if !pumvisible()
+		return a:keys
+	endif
+
+	let typedlen = col('.') - ncm2#_s('startbcol')
+	let common = CommonPrefix(map(ncm2#_s('matches'), 'v:val.word'))
+	return typedlen < len(common) ? repeat("\<C-h>", typedlen) . common : ""
+endfunction
+
 au BufEnter * call ncm2#enable_for_buffer()
 au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})
 set completeopt=noinsert,menuone,noselect
 set keymodel=startsel,stopsel
-imap <silent><expr><CR> ncm2_ultisnips#expand_or("<CR>", 'n')
+imap <silent><expr><CR> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<CR>"), 'n')
 let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
 let g:UltiSnipsJumpForwardTrigger = "<Tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<S-Tab>"
