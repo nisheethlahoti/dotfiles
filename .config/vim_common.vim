@@ -1,6 +1,7 @@
 " Basics
-set hidden             " Switch to other buffers even when current is unchanged
+set hidden             " Switch to other buffers even when current has been changed
 set breakindent        " Wrapped part of any line also appears indented
+set linebreak          " When wrapping text, break on word boundaries
 set tabstop=4          " Number of spaces that a <Tab> in the file counts for
 set shiftwidth=4       " Number of spaces to use for each step of (auto)indent
 set hlsearch           " Highlight the last search results
@@ -14,7 +15,9 @@ set sidescroll=5       " Minimum number of characters to keep on screen
 set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
 set nofoldenable       " Folds off by default
-set foldmethod=indent  " Fold according to file syntax
+set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
+behave mswin           " Behaves like graphical editors in select-mode
+set selectmode=""      " But enter visual mode instead of select mode with mouse selection
 colorscheme ron 
 
 " Visual movement with the arrows and End-Home 
@@ -47,9 +50,6 @@ command -nargs=? -complete=file E vert new <args>
 command -nargs=? -complete=help H vert h <args>
 command Term vsplit | term
 
-" Treat <Del> as delete rather than cut
-noremap <Del> "_x
-
 " Convert binary file to readable bytes output and vice-versa
 function Xxd()
 	if &binary
@@ -65,7 +65,6 @@ noremap <Leader>x :call Xxd()<CR>
 
 " Text file editing
 au FileType text set wrap
-au FileType text set linebreak
 
 " Moving between windows
 noremap <C-h> <C-w>h
@@ -90,29 +89,18 @@ let $COMMONRC = "~/.config/vim_common.vim"
 " For netrw (and hence vinegar)
 let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap number'
 
-" For Rust plugin
-let g:rustc_path = $HOME."/.cargo/bin/rustc"  " Path to rustc
-let g:autofmt_autosave = 1                    " Run rustfmt on each save
-
 " For fugitive plugin
 set diffopt+=vertical     " Always opens diffs vertically
 
 " For LanguageClient
-let g:LanguageClient_autoStart = 1
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
 nnoremap <silent> gr :call LanguageClient_textDocument_rename()<CR>
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
-let g:LanguageClient_settingsPath = $HOME.'/.config/nvim/settings.json'
 let c_cpp_ls = ['clangd', '-resource-dir=' . system('clang -print-resource-dir')[:-2]]
-let g:LanguageClient_serverCommands = {
-	\ 'rust': ['rls'],
-	\ 'cpp': c_cpp_ls,
-	\ 'c': c_cpp_ls,
-	\ 'python': ['pyls', '--log-file', '/tmp/pyls.log']
-\ }
+let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': ['pyls']}
 
 " Specify vim-airline theme
 let g:airline_theme='papercolor'
@@ -145,7 +133,6 @@ endfunction
 au BufEnter * call ncm2#enable_for_buffer()
 au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})
 set completeopt=noinsert,menuone,noselect
-set keymodel=startsel,stopsel
 imap <silent><expr><CR> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<CR>"), 'n')
 let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
 let g:UltiSnipsJumpForwardTrigger = "<Tab>"
@@ -156,7 +143,6 @@ call plug#begin('~/.vim_plug')
 	" General
 	Plug 'SirVer/ultisnips'           " Snippet manager
 	Plug 'honza/vim-snippets'         " List of snippets
-	Plug 'Shougo/vimproc.vim'         " Used for ghcmod-vim
 	Plug 'tpope/vim-fugitive'         " Git usage integration
 	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
 	Plug 'scrooloose/nerdcommenter'   " Commenting out code
@@ -173,8 +159,6 @@ call plug#begin('~/.vim_plug')
 	Plug 'roxma/nvim-yarp'            " Dependency of ncm-2
 
 	" Language-specific
-	Plug 'eagletmt/neco-ghc'
-	Plug 'eagletmt/ghcmod-vim'
 	Plug 'ncm2/ncm2-syntax' | Plug 'Shougo/neco-syntax'
 	Plug 'ncm2/ncm2-vim' | Plug 'Shougo/neco-vim'
 	Plug 'cespare/vim-toml'
@@ -185,9 +169,6 @@ call plug#end()
 au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
 au FileType rust noremap <Leader>f :%!rustfmt<CR>
 au FileType python noremap <Leader>f :%!yapf<CR>
-
-" Linting
-au FileType haskell noremap <Leader>l :exe '%! hlint - --refactor --refactor-options="--pos '.line('.').','.col('.').'"'<CR>
 
 " Rust running and compiling
 au FileType rust noremap <Leader>r :!cargo run<CR>
