@@ -156,3 +156,4 @@ fi
 set -o vi
 source $HOME/miniconda3/etc/profile.d/conda.sh
 alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
+alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
