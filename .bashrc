@@ -138,6 +138,15 @@ pvcp() {
 	pvtar $1 | tar -xf - -C $2
 }
 
+tarsend() {  # tarsend <local_file_path> <remote_machine> <remote_file_path> [<flags to ssh>]
+	pvtar $1 | ssh ${@:4}  $2 "cd $3 && tar -xf -"
+}
+
+tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>]
+	recsize=$(ssh ${@:3} $1 "du -sb $2" | awk '{print $1}')
+	ssh ${@:3} $1 "tar -cf - $2" | pv -s $recsize | tar -xf -
+}
+
 if which rustc > /dev/null
 then
 	if test -n "$LD_LIBRARY_PATH"
