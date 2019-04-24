@@ -139,12 +139,14 @@ pvcp() {
 }
 
 tarsend() {  # tarsend <local_file_path> <remote_machine> <remote_file_path> [<flags to ssh>]
-	pvtar $1 | ssh ${@:4}  $2 "cd $3 && tar -xf -"
+	target=$(mktemp) &&
+	tar -cf $target $1 &&
+	pv $target | ssh ${@:4}  $2 "cd $3 && tar -xf -"
 }
 
 tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>]
-	recsize=$(ssh ${@:3} $1 "du -sb $2" | awk '{print $1}')
-	ssh ${@:3} $1 "tar -cf - $2" | pv -s $recsize | tar -xf -
+	read size target <<< $(ssh ${@:3} $1 "target=\$(mktemp) && cd \$(dirname $2) && tar -cf \$target \$(basename $2) && du -sb \$target")
+	scp ${@:3} $1:$target /dev/stdout | pv -s $size | tar -xf -
 }
 
 if which rustc > /dev/null
