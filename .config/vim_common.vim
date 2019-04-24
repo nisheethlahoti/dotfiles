@@ -121,7 +121,7 @@ endfunction
 " If no dropdown list visible, returns a:keys. Else expands to common prefix
 " of list, if said prefix is longer than the sequence already typed.
 func! Ncm2ExpandCommonOr(keys)
-	if !pumvisible()
+	if empty(ncm2#_s('matches'))
 		return a:keys
 	endif
 
