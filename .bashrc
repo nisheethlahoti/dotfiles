@@ -131,7 +131,7 @@ revman() {
 }
 
 pvtar() {
-	tar -cf - "$1" | pv -s $(du -sb "$1" | awk '{print $1}')
+	tar -cf - "$1" | pv -s $(du -sb "$1" | awk '{print $1}') ${@:2}
 }
 
 pvcp() {
@@ -140,13 +140,19 @@ pvcp() {
 
 tarsend() {  # tarsend <local_file_path> <remote_machine> <remote_file_path> [<flags to ssh>]
 	target=$(mktemp) &&
-	tar -cf $target $1 &&
-	pv $target | ssh ${@:4}  $2 "cd $3 && tar -xf -"
+	pvtar $1 -N Zip | gzip -c - > $target &&
+	pv -N Transfer $target | ssh ${@:4}  $2 "tar -zxC $3 -f -"
+	rm $target
 }
 
 tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>]
-	read size target <<< $(ssh ${@:3} $1 "target=\$(mktemp) && cd \$(dirname $2) && tar -cf \$target \$(basename $2) && du -sb \$target")
-	scp ${@:3} $1:$target /dev/stdout | pv -s $size | tar -xf -
+	ssh ${@:3} $1 "set -m
+		target=\$(mktemp) 
+		tar -cC \$(dirname $2) -f - \$(basename $2)  < <({ cat ; kill -INT 0 ; }) |
+		pv -fN Zip -s \$(du -sb $2 | awk '{print \$1}') |
+		gzip > \$target  &&
+		pv -fN Transfer \$target
+		rm \$target" | tar -zxf -
 }
 
 if which rustc > /dev/null
