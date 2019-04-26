@@ -139,20 +139,11 @@ pvcp() {
 }
 
 tarsend() {  # tarsend <local_file_path> <remote_machine> <remote_file_path> [<flags to ssh>]
-	target=$(mktemp) &&
-	pvtar $1 -N Zip | gzip -c - > $target &&
-	pv -N Transfer $target | ssh ${@:4}  $2 "tar -zxC $3 -f -"
-	rm $target
+	pvtar $1 | ssh -C ${@:4}  $2 "tar -xC $3 -f -"
 }
 
 tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>]
-	ssh ${@:3} $1 "set -m
-		target=\$(mktemp) 
-		tar -cC \$(dirname $2) -f - \$(basename $2)  < <({ cat ; kill -INT 0 ; }) |
-		pv -fN Zip -s \$(du -sb $2 | awk '{print \$1}') |
-		gzip > \$target  &&
-		pv -fN Transfer \$target
-		rm \$target" | tar -zxf -
+	ssh -C ${@:3} $1 "tar -cC \$(dirname $2) -f - \$(basename $2) | pv -fs \$(du -sb $2 | awk '{print \$1}')" | tar -xf -
 }
 
 if which rustc > /dev/null
