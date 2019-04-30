@@ -139,11 +139,11 @@ pvcp() {
 }
 
 tarsend() {  # tarsend <local_file_path> <remote_machine> <remote_file_path> [<flags to ssh>]
-	pvtar $1 | ssh -C ${@:4}  $2 "tar -xC $3 -f -"
+	pvtar $1 | ssh ${@:4}  $2 "tar -xC $3 -f -"
 }
 
 tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>]
-	ssh -C ${@:3} $1 "tar -cC \$(dirname $2) -f - \$(basename $2) | pv -fs \$(du -sb $2 | awk '{print \$1}')" | tar -xf -
+	ssh ${@:3} $1 "tar -cC \$(dirname $2) -f - \$(basename $2) | pv -fs \$(du -sb $2 | awk '{print \$1}')" | tar -xf -
 }
 
 if which rustc > /dev/null
