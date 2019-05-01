@@ -167,3 +167,4 @@ set -o vi
 
 alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
 alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
+alias psync="rsync -a --info=progress2"
