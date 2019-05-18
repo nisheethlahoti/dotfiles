@@ -133,7 +133,7 @@ endfunction
 au BufEnter * call ncm2#enable_for_buffer()
 au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})
 set completeopt=noinsert,menuone,noselect
-imap <silent><expr><CR> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<CR>"), 'n')
+imap <silent><expr><C-Space> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<CR>"), 'n')
 let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
 let g:UltiSnipsJumpForwardTrigger = "<Tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<S-Tab>"
