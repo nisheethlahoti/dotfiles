@@ -167,6 +167,6 @@ set -o vi
 
 alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
 alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
-alias psync="rsync -a --info=progress2 --partial"
+alias psync="rsync -ca --info=progress2 --partial"
 alias num_frames="ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=nokey=1:noprint_wrappers=1"
 alias frame_rate="ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0"
