@@ -5,12 +5,15 @@ set linebreak          " When wrapping text, break on word boundaries
 set tabstop=4          " Number of spaces that a <Tab> in the file counts for
 set shiftwidth=4       " Number of spaces to use for each step of (auto)indent
 set hlsearch           " Highlight the last search results
+set incsearch          " Incrementally advance cursor position while searching
+set inccommand=split   " Shows the effects of a command incrementally, as you type.
 set relativenumber     " Display every line's number relative to current
 set undofile           " Keep an undo file (undo changes after closing)
 set number             " If relativenumber is set, shows current line number.
 set lazyredraw         " Somehow makes scrolling faster.
 set mouse=a            " Enables the use of the mouse like a normal application
 set nowrap             " Disables word wrap
+set scrolloff=5        " Minimal number of screen lines to keep around the cursor
 set sidescroll=5       " Minimum number of characters to keep on screen
 set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
@@ -19,6 +22,10 @@ set foldmethod=indent  " Fold according to file indent (Not using syntax because
 behave mswin           " Behaves like graphical editors in select-mode
 set selectmode=""      " But enter visual mode instead of select mode with mouse selection
 colorscheme ron 
+
+" See the difference between the current buffer and the file it has been loaded from
+command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
+               \ | wincmd p | diffthis
 
 " Visual movement with the arrows and End-Home 
 nnoremap <Down> gj
@@ -29,6 +36,13 @@ inoremap <Down> <C-o>gj
 inoremap <Up> <C-o>gk
 inoremap <Home> <C-o>g<Home>
 inoremap <End>  <C-o>g<End>
+
+" Moving between windows, and escaping terminal
+tnoremap <C-h> <C-\><C-n><C-w>h
+tnoremap <C-j> <C-\><C-n><C-w>j
+tnoremap <C-k> <C-\><C-n><C-w>k
+tnoremap <C-l> <C-\><C-n><C-w>l
+tnoremap <C-t> <C-\><C-n>gt
 
 " Because pageup and pagedown often ruin everything
 map <PageUp> <nop>
@@ -83,8 +97,8 @@ endfunction
 set foldtext=FoldFn()
 au ColorScheme * highlight Folded ctermfg=15 ctermbg=17
 
-" Paths of vim configuration files
-let $COMMONRC = "~/.config/vim_common.vim"
+" Paths of vim configuration file
+let $NVIMRC = "~/.config/nvim/init.vim"
 
 " For netrw (and hence vinegar)
 let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap number'
