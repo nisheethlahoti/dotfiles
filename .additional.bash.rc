@@ -1,0 +1,58 @@
+HISTSIZE=500000
+HISTFILESIZE=5000000
+PROMPT_COMMAND='history -a'
+shopt -s globstar
+set -o vi
+
+revlist() {
+	zgrep "by default" /usr/share/man/man1/man.1.gz |
+	head -n 1 |
+	sed -Ee "s/^.*\"([^\"]*)\".*$/\1/g" |
+	tr ' \n' ',' |
+	tac -s ',' |
+	sed -Ee "s/,$/\n/"
+}
+
+revman() {
+	man -s $(revlist) $1
+}
+
+pvtar() {
+	tar -cf - "$1" | pv -s $(du -sb "$1" | awk '{print $1}') ${@:2}
+}
+
+pvcp() {
+	pvtar $1 | tar -xf - -C $2
+}
+
+tarsend() {  # tarsend <local_file_path> <remote_machine> <remote_file_path> [<flags to ssh>]
+	pvtar $1 | ssh ${@:4}  $2 "tar -xC $3 -f -"
+}
+
+tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>]
+	ssh ${@:3} $1 "tar -cC \$(dirname $2) -f - \$(basename $2) | pv -fs \$(du -sb $2 | awk '{print \$1}')" | tar -xf -
+}
+
+if which rustc > /dev/null
+then
+	if test -n "$LD_LIBRARY_PATH"
+	then
+		LD_LIBRARY_PATH=":$LD_LIBRARY_PATH"
+	fi
+	export LD_LIBRARY_PATH="$(rustc --print sysroot)/lib$LD_LIBRARY_PATH"
+	export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/src"
+fi
+
+if test -d ~/.cabal/bin
+then
+	export PATH="$HOME/.cabal/bin:$PATH"
+fi
+
+[ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
+alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
+alias psync="rsync -ca --info=progress2 --partial"
+alias num_frames="ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=nokey=1:noprint_wrappers=1"
+alias frame_rate="ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of csv=p=0"
