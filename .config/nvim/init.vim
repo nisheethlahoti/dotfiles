@@ -27,16 +27,6 @@ colorscheme ron
 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
                \ | wincmd p | diffthis
 
-" Visual movement with the arrows and End-Home 
-nnoremap <Down> gj
-nnoremap <Up> gk
-vnoremap <Down> gj
-vnoremap <Up> gk
-inoremap <Down> <C-o>gj
-inoremap <Up> <C-o>gk
-inoremap <Home> <C-o>g<Home>
-inoremap <End>  <C-o>g<End>
-
 " Moving between windows, and escaping terminal
 tnoremap <C-h> <C-\><C-n><C-w>h
 tnoremap <C-j> <C-\><C-n><C-w>j
@@ -44,7 +34,7 @@ tnoremap <C-k> <C-\><C-n><C-w>k
 tnoremap <C-l> <C-\><C-n><C-w>l
 tnoremap <C-t> <C-\><C-n>gt
 
-" Because pageup and pagedown often ruin everything
+" Because I often unintentionally press PageUp and PageDown
 map <PageUp> <nop>
 map! <PageUp> <nop>
 map <PageDown> <nop>
