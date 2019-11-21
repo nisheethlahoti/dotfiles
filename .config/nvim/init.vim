@@ -166,6 +166,7 @@ call plug#begin('~/.vim_plug')
 	Plug 'ncm2/ncm2-syntax' | Plug 'Shougo/neco-syntax'
 	Plug 'ncm2/ncm2-vim' | Plug 'Shougo/neco-vim'
 	Plug 'cespare/vim-toml'
+	Plug 'rust-lang/rust.vim'
 	Plug 'vlaadbrain/gnuplot.vim'
 call plug#end()
 
