@@ -173,7 +173,7 @@ call plug#end()
 " Filetype-specific formatting mappings
 au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
 au FileType rust noremap <Leader>f :%!rustfmt<CR>
-au FileType python noremap <Leader>f :%!yapf<CR>
+au FileType python noremap <Leader>f :%!black -q -<CR>
 
 " Rust running and compiling
 au FileType rust noremap <Leader>r :!cargo run<CR>
