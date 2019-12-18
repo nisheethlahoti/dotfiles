@@ -2,14 +2,14 @@
 
 # Run with cron on reboot
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$UID/bus"
-total=$(free | tail -n +2 | head -n 1 | awk '{print $2}')
+half_swap=$(($(free | tail -n +3 | awk '{sum+=$2}END{print sum}') / 2))
 
 while true
 do
-	used=$(free | tail -n +2 | awk '{sum+=$3}END{print sum}')
-	if [[ $used -gt $total ]]
+	free=$(free | tail -n +2 | awk '{sum+=$4}END{print sum}')
+	if [[ $free -lt $half_swap ]]
 	then
-		notify-send "Memory + swap usage exceeds RAM size!"
+		notify-send "Less than half of swap space free!"
 		sleep 60
 	else
 		sleep 1
