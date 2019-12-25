@@ -137,10 +137,12 @@ endfunction
 au BufEnter * call ncm2#enable_for_buffer()
 au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})
 set completeopt=noinsert,menuone,noselect
-imap <silent><expr><C-Space> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<CR>"), 'n')
+imap <silent><expr><C-Space> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<C-Space>"), 'n')
 let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
-let g:UltiSnipsJumpForwardTrigger = "<Tab>"
-let g:UltiSnipsJumpBackwardTrigger = "<S-Tab>"
+let g:UltiSnipsJumpForwardTrigger = "<C-Space>"
+let g:UltiSnipsJumpBackwardTrigger = "<C-S-Space>"
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " Plugins
 call plug#begin('~/.vim_plug')
