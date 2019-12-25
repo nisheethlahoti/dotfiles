@@ -125,22 +125,28 @@ endfunction
 " If no dropdown list visible, returns a:keys. Else expands to common prefix
 " of list, if said prefix is longer than the sequence already typed.
 func! Ncm2ExpandCommonOr(keys)
-	if empty(ncm2#_s('matches'))
+	let matches =  ncm2#_s('matches')
+	if empty(matches) || type(matches[0]) != 4
 		return a:keys
 	endif
 
 	let typedlen = col('.') - ncm2#_s('startbcol')
-	let common = CommonPrefix(map(ncm2#_s('matches'), 'v:val.word'))
+	let common = CommonPrefix(map(matches, 'v:val.word'))
 	return typedlen < len(common) ? repeat("\<C-h>", typedlen) . common : ""
 endfunction
 
 au BufEnter * call ncm2#enable_for_buffer()
-au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})
+au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})  " Set highest priority for snippets
 set completeopt=noinsert,menuone,noselect
-imap <silent><expr><C-Space> ncm2_ultisnips#expand_or(Ncm2ExpandCommonOr("<C-Space>"), 'n')
+imap <silent><expr><C-Space> ncm2_ultisnips#expand_or("<C-Space>", 'n')
 let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
 let g:UltiSnipsJumpForwardTrigger = "<C-Space>"
 let g:UltiSnipsJumpBackwardTrigger = "<C-S-Space>"
+
+" Use <CR> for autocompleting maximum matching prefix
+imap <silent><expr><CR> Ncm2ExpandCommonOr("<CR>")
+
+" Use <Tab> and <S-Tab> keys for autocomplete
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
