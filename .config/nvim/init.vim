@@ -109,32 +109,7 @@ let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_
 " Specify vim-airline theme
 let g:airline_theme='papercolor'
 
-" Functions for ncm2 and ultisnips
-func! CommonPrefix(words) abort  " Longest common prefix for list of strings. Aborts on empty list.
-	let base = a:words[0]
-	for prefix_len in range(len(base))
-		for word in a:words[1:]
-			if word[prefix_len] != base[prefix_len]
-				return base[:prefix_len][:-2]
-			endif
-		endfor
-	endfor
-	return base
-endfunction
-
-" If no dropdown list visible, returns a:keys. Else expands to common prefix
-" of list, if said prefix is longer than the sequence already typed.
-func! Ncm2ExpandCommonOr(keys)
-	let matches =  ncm2#_s('matches')
-	if empty(matches) || type(matches[0]) != 4
-		return a:keys
-	endif
-
-	let typedlen = col('.') - ncm2#_s('startbcol')
-	let common = CommonPrefix(map(matches, 'v:val.word'))
-	return typedlen < len(common) ? repeat("\<C-h>", typedlen) . common : ""
-endfunction
-
+" Mappings for ncm2 and ultisnips
 au BufEnter * call ncm2#enable_for_buffer()
 au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})  " Set highest priority for snippets
 set completeopt=noinsert,menuone,noselect
@@ -142,9 +117,6 @@ imap <silent><expr><C-Space> ncm2_ultisnips#expand_or("<C-Space>", 'n')
 let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
 let g:UltiSnipsJumpForwardTrigger = "<C-Space>"
 let g:UltiSnipsJumpBackwardTrigger = "<C-S-Space>"
-
-" Use <CR> for autocompleting maximum matching prefix
-imap <silent><expr><CR> Ncm2ExpandCommonOr("<CR>")
 
 " Use <Tab> and <S-Tab> keys for autocomplete
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
