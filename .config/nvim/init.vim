@@ -49,6 +49,11 @@ map <Leader>S :%s/\v
 " For clearing out last search highlight
 noremap <Leader>h :noh<CR>
 
+" Commands to do the intended thing on overly common typos
+command W w
+command Q q
+command Wq wq
+
 " Commands for editing, help, and terminal in new vertical window
 command -nargs=? -complete=file E vert new <args>
 command -nargs=? -complete=help H vert h <args>
