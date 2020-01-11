@@ -115,11 +115,10 @@ let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_
 let g:airline_theme='papercolor'
 
 " Mappings for ncm2 and ultisnips
-au BufEnter * call ncm2#enable_for_buffer()
-au BufEnter * call ncm2#override_source('ultisnips', {'priority': 10})  " Set highest priority for snippets
-set completeopt=noinsert,menuone,noselect
-imap <silent><expr><C-Space> ncm2_ultisnips#expand_or("<C-Space>", 'n')
-let g:UltiSnipsExpandTrigger = "<Plug>(DONTUSE_ULTISNIPS_EXPAND)"
+let g:deoplete#enable_at_startup = 1
+let g:deoplete#enable_refresh_always = 1
+au BufEnter * call deoplete#custom#source("ultisnips", "rank", 9999)  " Set highest priority for snippets
+let g:UltiSnipsExpandTrigger = "<C-Space>"
 let g:UltiSnipsJumpForwardTrigger = "<C-Space>"
 let g:UltiSnipsJumpBackwardTrigger = "<C-S-Space>"
 
@@ -142,14 +141,11 @@ call plug#begin('~/.vim_plug')
 	Plug 'vim-airline/vim-airline-themes'
 	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
 	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
-	Plug 'ncm2/ncm2'                  " Autocomplete
-	Plug 'ncm2/ncm2-ultisnips'        " Support of ultisnips with ncm2
-	Plug 'ncm2/ncm2-bufword'          " Adds words from current buffer to ncm2
-	Plug 'roxma/nvim-yarp'            " Dependency of ncm-2
+	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
 
 	" Language-specific
-	Plug 'ncm2/ncm2-syntax' | Plug 'Shougo/neco-syntax'
-	Plug 'ncm2/ncm2-vim' | Plug 'Shougo/neco-vim'
+	Plug 'Shougo/neco-syntax'
+	Plug 'Shougo/neco-vim'
 	Plug 'cespare/vim-toml'
 	Plug 'rust-lang/rust.vim'
 	Plug 'vlaadbrain/gnuplot.vim'
