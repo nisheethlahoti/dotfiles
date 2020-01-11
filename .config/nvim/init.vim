@@ -119,8 +119,8 @@ let g:deoplete#enable_at_startup = 1
 let g:deoplete#enable_refresh_always = 1
 au BufEnter * call deoplete#custom#source("ultisnips", "rank", 9999)  " Set highest priority for snippets
 let g:UltiSnipsExpandTrigger = "<C-Space>"
-let g:UltiSnipsJumpForwardTrigger = "<C-Space>"
-let g:UltiSnipsJumpBackwardTrigger = "<C-S-Space>"
+let g:UltiSnipsJumpForwardTrigger = "<C-Right>"
+let g:UltiSnipsJumpBackwardTrigger = "<C-Left>"
 
 " Use <Tab> and <S-Tab> keys for autocomplete
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
