@@ -108,7 +108,7 @@ nnoremap <silent> gr :call LanguageClient_textDocument_rename()<CR>
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
-let c_cpp_ls = ['clangd', '-resource-dir=' . system('clang -print-resource-dir')[:-2]]
+let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
 let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': ['pyls']}
 
 " Specify vim-airline theme
@@ -160,3 +160,7 @@ au FileType python noremap <Leader>f :%!black -q -<CR>
 au FileType rust noremap <Leader>r :!cargo run<CR>
 au FileType rust noremap <Leader>t :!cargo test<CR>
 au FileType rust noremap <Leader>c :!cargo clippy<CR>
+
+" Because default clang-format settings have 2 spaces
+au FileType c,cpp set tabstop=2
+au FileType c,cpp set shiftwidth=2
