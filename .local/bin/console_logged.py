@@ -17,7 +17,7 @@ parser = ArgumentParser(description='Interactive python console that logs all it
 parser.add_argument('logfile', help='File to log to')
 parser.add_argument('args', nargs='*', help='Additional things to be passed on command line')
 sys.path.append('.')
-logfile = open(parser.parse_args().logfile, 'w')
+logfile = open(parser.parse_args().logfile, 'a')
 console = code.InteractiveConsole(locals={'args': parser.parse_args().args})
 console.raw_input = logged_input
 readline.set_completer(rlcompleter.Completer(console.locals).complete)
