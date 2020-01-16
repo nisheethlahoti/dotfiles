@@ -33,10 +33,17 @@ tarreceive() {  # tarreceive <remote_machine> <remote_file_path> [<flags to ssh>
 	ssh ${@:3} $1 "tar -cC \$(dirname $2) -f - \$(basename $2) | pv -fs \$(du -sb $2 | awk '{print \$1}')" | tar -xf -
 }
 
+create_alias() {  # create_alias <alias> <alias-target> [<autocompletion-target>]
+	alias $1="$2"
+	COMMAND=${3:-$(echo "$2" | awk '{print $1}')}
+	_completion_loader $COMMAND
+	$(complete -p $COMMAND | sed "s/ $COMMAND$//") $1
+}
+
 [ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh
 
-alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
-alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
-alias psync="rsync -a --no-i-r --info=progress2 --partial"
-alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
-alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
+create_alias config 'git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
+create_alias tcpython "LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python" python
+create_alias psync "rsync -a --no-i-r --info=progress2 --partial"
+create_alias num_frames "ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
+create_alias frame_rate "ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
