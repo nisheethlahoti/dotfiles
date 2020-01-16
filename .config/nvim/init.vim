@@ -101,6 +101,10 @@ let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap n
 " For fugitive plugin
 set diffopt+=vertical     " Always opens diffs vertically
 
+" For fzf plugin (\o for opening file and \g for searching through files)
+noremap <Leader>o :FZF<CR>
+noremap <Leader>g :Rg<CR>
+
 " For LanguageClient
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
@@ -140,6 +144,7 @@ call plug#begin('~/.vim_plug')
 	Plug 'vim-airline/vim-airline'    " Better status line
 	Plug 'vim-airline/vim-airline-themes'
 	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
+	Plug 'junegunn/fzf.vim'           " Vim bindings for fzf
 	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
 	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
 
