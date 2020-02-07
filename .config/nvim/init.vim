@@ -108,7 +108,10 @@ noremap <Leader>g :Rg<CR>
 " For LanguageClient
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-nnoremap <silent> gr :call LanguageClient_textDocument_rename()<CR>
+nnoremap <silent> <Leader>r :call LanguageClient_textDocument_rename()<CR>
+nnoremap <silent> <Leader>f :call LanguageClient_textDocument_formatting()<CR>
+nnoremap <silent> <Leader>u :call LanguageClient_textDocument_references()<CR>
+
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
@@ -155,11 +158,6 @@ call plug#begin('~/.vim_plug')
 	Plug 'rust-lang/rust.vim'
 	Plug 'vlaadbrain/gnuplot.vim'
 call plug#end()
-
-" Filetype-specific formatting mappings
-au FileType c,cpp noremap <Leader>f :%!clang-format<CR>
-au FileType rust noremap <Leader>f :%!rustfmt<CR>
-au FileType python noremap <Leader>f :%!black -q -<CR>
 
 " Rust running and compiling
 au FileType rust noremap <Leader>r :!cargo run<CR>
