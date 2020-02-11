@@ -19,6 +19,7 @@ set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
 set nofoldenable       " Folds off by default
 set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
+set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 behave mswin           " Behaves like graphical editors in select-mode
 set selectmode=""      " But enter visual mode instead of select mode with mouse selection
 colorscheme ron 
