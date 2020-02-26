@@ -22,7 +22,6 @@ set foldmethod=indent  " Fold according to file indent (Not using syntax because
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 behave mswin           " Behaves like graphical editors in select-mode
 set selectmode=""      " But enter visual mode instead of select mode with mouse selection
-colorscheme ron 
 
 " See the difference between the current buffer and the file it has been loaded from
 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
@@ -119,9 +118,6 @@ let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
 let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
 let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': ['pyls']}
 
-" Specify vim-airline theme
-let g:airline_theme='papercolor'
-
 " Mappings for ncm2 and ultisnips
 let g:deoplete#enable_at_startup = 1
 let g:deoplete#enable_refresh_always = 1
@@ -151,6 +147,7 @@ call plug#begin('~/.vim_plug')
 	Plug 'junegunn/fzf.vim'           " Vim bindings for fzf
 	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
 	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
+	Plug 'gruvbox-community/gruvbox'  " Colorscheme
 
 	" Language-specific
 	Plug 'Shougo/neco-syntax'
@@ -168,3 +165,10 @@ au FileType rust noremap <Leader>c :!cargo clippy<CR>
 " Because default clang-format settings have 2 spaces
 au FileType c,cpp set tabstop=2
 au FileType c,cpp set shiftwidth=2
+
+" Beautification
+let g:gruvbox_termcolors=16
+let g:airline_theme='base16'
+sleep 1m  " Required for gruvbox to detect the correct background
+colorscheme gruvbox
+highlight normal ctermbg=none
