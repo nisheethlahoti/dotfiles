@@ -24,8 +24,7 @@ behave mswin           " Behaves like graphical editors in select-mode
 set selectmode=""      " But enter visual mode instead of select mode with mouse selection
 
 " See the difference between the current buffer and the file it has been loaded from
-command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
-               \ | wincmd p | diffthis
+command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
 
 " Moving between windows, and escaping terminal
 tnoremap <C-h> <C-\><C-n><C-w>h
@@ -102,8 +101,10 @@ let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap n
 set diffopt+=vertical     " Always opens diffs vertically
 
 " For fzf plugin (\o for opening file and \g for searching through files)
-noremap <Leader>o :FZF<CR>
+noremap <Leader>o :Files<CR>
 noremap <Leader>g :Rg<CR>
+command! -bang -nargs=* Files call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+let g:fzf_layout = {'window': {'width': 0.8, 'height': 0.8}}
 
 " For LanguageClient
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
@@ -125,6 +126,7 @@ au BufEnter * call deoplete#custom#source("ultisnips", "rank", 9999)  " Set high
 let g:UltiSnipsExpandTrigger = "<C-Space>"
 let g:UltiSnipsJumpForwardTrigger = "<C-Right>"
 let g:UltiSnipsJumpBackwardTrigger = "<C-Left>"
+
 
 " Use <Tab> and <S-Tab> keys for autocomplete
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
