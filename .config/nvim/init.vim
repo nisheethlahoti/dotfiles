@@ -149,7 +149,6 @@ call plug#begin('~/.vim_plug')
 	Plug 'junegunn/fzf.vim'           " Vim bindings for fzf
 	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
 	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
-	Plug 'gruvbox-community/gruvbox'  " Colorscheme
 
 	" Language-specific
 	Plug 'Shougo/neco-syntax'
@@ -169,8 +168,12 @@ au FileType c,cpp set tabstop=2
 au FileType c,cpp set shiftwidth=2
 
 " Beautification
-let g:gruvbox_termcolors=16
 let g:airline_theme='base16'
-sleep 1m  " Required for gruvbox to detect the correct background
-colorscheme gruvbox
-highlight normal ctermbg=none
+au BufEnter * hi PreProc ctermfg=12
+hi PMenu ctermbg=13
+hi CursorLine cterm=none ctermbg=8 ctermfg=none
+hi Visual ctermbg=4 cterm=reverse
+hi DiffDelete ctermbg=1 ctermfg=0
+hi DiffAdd ctermbg=2 ctermfg=0
+hi DiffChange ctermbg=11 ctermfg=0
+hi DiffText ctermbg=15 ctermfg=0 cterm=none
