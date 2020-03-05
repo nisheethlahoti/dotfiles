@@ -20,8 +20,6 @@ set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
 set nofoldenable       " Folds off by default
 set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
-behave mswin           " Behaves like graphical editors in select-mode
-set selectmode=""      " But enter visual mode instead of select mode with mouse selection
 
 " See the difference between the current buffer and the file it has been loaded from
 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
@@ -46,7 +44,7 @@ map <Leader>s :s/\v
 map <Leader>S :%s/\v
 
 " For clearing out last search highlight
-noremap <Leader>h :noh<CR>
+nnoremap <silent> <Esc> :noh<CR>
 
 " Commands to do the intended thing on overly common typos
 command W w
@@ -55,8 +53,31 @@ command Wq wq
 
 " Commands for editing, help, and terminal in new vertical window
 command -nargs=? -complete=file E vert new <args>
-command -nargs=? -complete=help H vert h <args>
 command Term vsplit | term
+
+function FloatingExec(...) abort
+	call nvim_open_win(nvim_create_buf(0, 1), 1, {
+		\'relative': 'editor',
+		\'row': float2nr(0.1 * &lines),
+		\'col': float2nr(0.1 * &columns),
+		\'height': float2nr(0.8 * &lines),
+		\'width': float2nr(0.8 * &columns),
+	\})
+	try
+		execute join(a:000, ' ')
+		set winhl=Normal:CursorLine
+		nnoremap <buffer> <silent> <Esc> :q<CR>
+	catch
+		quit
+	endtry
+endfunction
+
+" Help and man in floating windows (supporting keywordprg)
+command -nargs=? -complete=help Help call FloatingExec("set buftype=help | help", <q-args>)
+command -nargs=1 FloatMan call FloatingExec("Man! | Man", <q-args>)
+au BufEnter * if &keywordprg == ":help" | set keywordprg=:Help | endif
+au BufEnter * if &keywordprg == ":Man" | set keywordprg=:FloatMan | endif
+
 
 " Convert binary file to readable bytes output and vice-versa
 function Xxd()
@@ -102,22 +123,30 @@ set diffopt+=vertical     " Always opens diffs vertically
 
 " For fzf plugin (\o for opening file and \g for searching through files)
 noremap <Leader>o :Files<CR>
-noremap <Leader>g :Rg<CR>
+noremap <Leader>l :Lines<CR>
+noremap <Leader>h :History:<CR>
 command! -bang -nargs=* Files call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-let g:fzf_layout = {'window': {'width': 0.8, 'height': 0.8}}
+command! -bang -nargs=* -complete=file Lines call fzf#vim#grep(
+	\ 'rg --line-number --no-heading --color=always "" '.<q-args>, 1,
+	\ fzf#vim#with_preview(), <bang>0)
+let g:fzf_layout = {'window': {'width': 0.8, 'height': 0.8, 'relative': 'editor'}}
 
 " For LanguageClient
-nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
-nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-nnoremap <silent> <Leader>r :call LanguageClient_textDocument_rename()<CR>
-nnoremap <silent> <Leader>f :call LanguageClient_textDocument_formatting()<CR>
-nnoremap <silent> <Leader>u :call LanguageClient_textDocument_references()<CR>
+function LanguageClientMaps()
+	nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
+	nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
+	nnoremap <silent> <Leader>r :call LanguageClient_textDocument_rename()<CR>
+	nnoremap <silent> <Leader>f :call LanguageClient_textDocument_formatting()<CR>
+	nnoremap <silent> <Leader>u :call LanguageClient_textDocument_references()<CR>
+endfunction
 
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
 let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
 let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': ['pyls']}
+let s:lc_filetypes=join(keys(g:LanguageClient_serverCommands), ',')
+execute 'au FileType '.s:lc_filetypes.' call LanguageClientMaps()'
 
 " Mappings for ncm2 and ultisnips
 let g:deoplete#enable_at_startup = 1
