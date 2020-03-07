@@ -1,0 +1,8 @@
+[merge]
+	tool = nvim
+[mergetool]
+	prompt = false
+[mergetool "nvim"]
+	cmd = nvim -d $LOCAL $MERGED $REMOTE -c 'wincmd l | wincmd K'
+[difftool "nvim"]
+	cmd = nvim -d $LOCAL $REMOTE
