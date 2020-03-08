@@ -351,6 +351,14 @@ fi
 
 # Initialize prompt. Type `p10k configure` or edit .p10k.zsh to customize it.
 [[ -e ${ZDOTDIR:-~}/.p10k.zsh ]] && z4h source ${ZDOTDIR:-~}/.p10k.zsh
+
+# Customize p10k config to show time with every previous command
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS+=(command_execution_time time)
+POWERLEVEL9K_TIME_FORMAT="%D{%d/%m %H:%M:%S}"
+POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
+function p10k-on-pre-prompt() { p10k display '1|2/left/prompt_char|2/right'=show '2/left/time|2/left/command_execution_time'=hide }
+function p10k-on-post-prompt() { p10k display '1|2/left/prompt_char|2/right'=hide '2/left/time|2/left/command_execution_time'=show }
+
 z4h source $Z4H_DIR/romkatv/powerlevel10k/powerlevel10k.zsh-theme
 
 z4h source $Z4H_DIR/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
