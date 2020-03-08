@@ -162,7 +162,7 @@ inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " Plugins
-call plug#begin('~/.vim_plug')
+call plug#begin('~/.plugins/neovim')
 	" General
 	Plug 'SirVer/ultisnips'           " Snippet manager
 	Plug 'honza/vim-snippets'         " List of snippets
