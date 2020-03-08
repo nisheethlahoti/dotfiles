@@ -365,7 +365,7 @@ z4h source $Z4H_DIR/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
 # zsh-syntax-highlighting must be loaded after all widgets have been defined.
 z4h source $Z4H_DIR/zsh-users/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
 
-autoload -Uz zmv zcp zln # enable a bunch of awesome zsh commands
+autoload -Uz zcalc zmv zcp zln # enable a bunch of awesome zsh commands
 
 # Aliases.
 if (( $+commands[dircolors] )); then  # proxy for GNU coreutils vs BSD
