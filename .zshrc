@@ -7,7 +7,19 @@ emulate zsh
 
 emulate zsh -o posix_argzero -c ': ${Z4H_ZSH:=${${0#-}:-zsh}}' # command to start zsh
 : ${Z4H_DIR:=~/.plugins/zsh}                                   # cache directory
-: ${Z4H_UPDATE_DAYS=13}                                        # update dependencies this often
+
+function update-apt() {
+	sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
+}
+
+function update-all() {
+	update-apt
+	nvim -c PlugUpdate - < /dev/null
+	diff <(head -n $(cat ~/.zsh_history.bak | wc -l) ~/.zsh_history) ~/.zsh_history.bak > /dev/null &&
+	cp ~/.zsh_history ~/.zsh_history.bak &&
+	echo "Zsh history backed up"
+	z4h update
+}
 
 function z4h() {
   emulate -L zsh
@@ -47,19 +59,6 @@ function z4h() {
   )
 
   {
-    # Check if update is required.
-    if [[ $update == 0 && -d $Z4H_DIR && $Z4H_UPDATE_DAYS == <-> ]]; then
-      zmodload zsh/stat zsh/datetime || return
-      local -a last_update_ts
-      if ! zstat -A last_update_ts +mtime -- $Z4H_DIR/.last-update-ts 2>/dev/null ||
-         (( EPOCHSECONDS - last_update_ts[1] >= 86400 * Z4H_UPDATE_DAYS )); then
-        local REPLY
-        read -q ${(%):-"?%F{3}z4h%f: update dependencies? [y/N]: "} && update=1
-        print -u2
-        (( update )) || print -ru2 -- ${(%):-"%F{3}z4h%f: type %F{2}z4h%f %Bupdate%b to update"}
-      fi
-    fi
-
     if [[ ! -d $Z4H_DIR ]]; then
       zmodload -F zsh/files b:zf_mkdir || return
       zf_mkdir -p -- $Z4H_DIR || return
@@ -382,7 +381,6 @@ alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') pyth
 alias psync="rsync -a --no-i-r --info=progress2 --partial"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
-alias update-apt="sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'"
 
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
