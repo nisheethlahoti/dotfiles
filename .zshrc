@@ -44,7 +44,6 @@ function z4h() {
     zsh-users/zsh-completions          # https://github.com/zsh-users/zsh-completions
     romkatv/powerlevel10k              # https://github.com/romkatv/powerlevel10k
     Aloxaf/fzf-tab                     # https://github.com/Aloxaf/fzf-tab
-    junegunn/fzf                       # https://github.com/junegunn/fzf
   )
 
   {
@@ -81,12 +80,6 @@ function z4h() {
           https://github.com/$repo.git $Z4H_DIR/$repo || return
       fi
     done
-
-    # Download fzf binary.
-    if [[ ! -e $Z4H_DIR/junegunn/fzf/bin/fzf || $update == 1 ]]; then
-      print -ru2 -- ${(%):-"%F{3}z4h%f: fetching %F{2}fzf%f binary"}
-      >&2 $Z4H_DIR/junegunn/fzf/install --bin || return
-    fi
 
     (( update )) && print -n >$Z4H_DIR/.last-update-ts
 
@@ -127,18 +120,6 @@ autoload -Uz add-zsh-hook
 add-zsh-hook preexec _z4h-set-term-title-preexec
 add-zsh-hook precmd _z4h-set-term-title-precmd
 _z4h-set-term-title-precmd
-
-# If the current locale isn't UTF-8, change it to an UTF-8 one.
-# Try in order: C.UTF-8, en_US.UTF-8, the first UTF-8 locale in lexicographical order.
-() {
-  emulate -L zsh -o extended_glob
-  zmodload zsh/langinfo
-  [[ $langinfo[CODESET] == (utf|UTF)(-|)8 ]] && return
-  (( $+commands[locale] )) || return
-  local loc=(${(@M)$(locale -a):#*.(utf|UTF)(-|)8})
-  (( $#loc )) || return
-  LC_ALL=${loc[(r)(#i)C.UTF(-|)8]:-${loc[(r)(#i)en_US.UTF(-|)8]:-$loc[1]}}
-}
 
 # Enable command_not_found_handler if possible.
 if (( $+functions[command_not_found_handler] )); then
@@ -192,37 +173,6 @@ function z4h-down-line-or-beginning-search-local() {
   zle .set-local-history 0
 }
 
-function z4h-expand-alias() { zle _expand_alias || true }
-function z4h-run-help() { zle run-help || true }
-
-zmodload zsh/terminfo
-if (( $+terminfo[rmam] && $+terminfo[smam] )); then
-  function z4h-expand-or-complete-with-dots() {
-    # Show '...' while completing. No `emulate -L zsh` to pick up dotglob if it's set.
-    print -rn -- ${terminfo[rmam]}${(%):-"%F{red}...%f"}${terminfo[smam]}
-    zle fzf-tab-complete
-  }
-else
-  function z4h-expand-or-complete-with-dots() { zle fzf-tab-complete }
-fi
-
-# fzf-history-widget with duplicate removal, preview and syntax highlighting (requires `bat`).
-function z4h-fzf-history-widget() {
-  emulate -L zsh -o pipefail
-  local preview='zsh -dfc "setopt extended_glob; echo - \${\${1#*[0-9] }## #}" -- {}'
-  (( $+commands[bat] )) && preview+=' | bat -l bash --color always -pp'
-  local selected
-  selected="$(
-    fc -rl 1 |
-    awk '!_[substr($0, 8)]++' |
-    fzf +m -n2..,.. --tiebreak=index --cycle --height=80% --preview-window=down:30%:wrap \
-      --query=$LBUFFER --preview=$preview)"
-  local -i ret=$?
-  [[ -n "$selected" ]] && zle vi-fetch-history -n $selected
-  zle .reset-prompt
-  return ret
-}
-
 # Widgets for changing current working directory.
 function z4h-redraw-prompt() {
   emulate -L zsh
@@ -251,15 +201,11 @@ autoload -Uz up-line-or-beginning-search down-line-or-beginning-search run-help
 
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-zle -N z4h-expand-alias
-zle -N z4h-expand-or-complete-with-dots
 zle -N z4h-up-line-or-beginning-search-local
 zle -N z4h-down-line-or-beginning-search-local
 zle -N z4h-cd-back
 zle -N z4h-cd-forward
 zle -N z4h-cd-up
-zle -N z4h-fzf-history-widget
-zle -N z4h-run-help
 
 zmodload zsh/terminfo
 if (( terminfo[colors] >= 256 )); then
@@ -283,75 +229,39 @@ zle_highlight=('paste:none')   # disable highlighting of text pasted into the co
 HISTSIZE=1000000000                        # infinite command history
 SAVEHIST=1000000000                        # infinite command history
 
-bindkey -e  # enable emacs keymap (sorry, vi users)
+bindkey -v  # enable vim keymap
 
 FZF_COMPLETION_TRIGGER=''                                # ctrl-t goes to fzf whenever possible
-fzf_default_completion=z4h-expand-or-complete-with-dots  # ctrl-t falls back to tab
-z4h source $Z4H_DIR/junegunn/fzf/shell/completion.zsh    # load fzf-completion
-z4h source $Z4H_DIR/junegunn/fzf/shell/key-bindings.zsh  # load fzf-cd-widget
+z4h source ~/.fzf.zsh                                    # load fzf
 bindkey -r '^[c'                                         # remove unwanted binding
 
 FZF_TAB_PREFIX=                                 # remove '·'
 FZF_TAB_SHOW_GROUP=brief                        # show group headers only for duplicate options
 FZF_TAB_SINGLE_GROUP=()                         # no colors and no header for a single group
-FZF_TAB_CONTINUOUS_TRIGGER='alt-enter'          # alt-enter to accept and trigger another completion
 bindkey '\t' expand-or-complete                 # fzf-tab reads it during initialization
 z4h source $Z4H_DIR/Aloxaf/fzf-tab/fzf-tab.zsh  # load fzf-tab-complete
-
-# If NumLock is off, translate keys to make them appear the same as with NumLock on.
-bindkey -s '^[OM' '^M'  # enter
-bindkey -s '^[Ok' '+'
-bindkey -s '^[Om' '-'
-bindkey -s '^[Oj' '*'
-bindkey -s '^[Oo' '/'
-bindkey -s '^[OX' '='
-
-# If someone switches our terminal to application mode (smkx), translate keys to make
-# them appear the same as in raw mode (rmkx).
-bindkey -s '^[OH' '^[[H'  # home
-bindkey -s '^[OF' '^[[F'  # end
-bindkey -s '^[OA' '^[[A'  # up
-bindkey -s '^[OB' '^[[B'  # down
-bindkey -s '^[OD' '^[[D'  # left
-bindkey -s '^[OC' '^[[C'  # right
-
-# TTY sends different key codes. Translate them to regular.
-bindkey -s '^[[1~' '^[[H'  # home
-bindkey -s '^[[4~' '^[[F'  # end
 
 # Do nothing on pageup and pagedown. Better than printing '~'.
 bindkey -s '^[[5~' ''
 bindkey -s '^[[6~' ''
 
-bindkey '^[[D'    backward-char                           # left       move cursor one char backward
-bindkey '^[[C'    forward-char                            # right      move cursor one char forward
-bindkey '^[[A'    z4h-up-line-or-beginning-search-local   # up         prev command in local history
-bindkey '^[[B'    z4h-down-line-or-beginning-search-local # down       next command in local history
-bindkey '^[[H'    beginning-of-line                       # home       go to the beginning of line
-bindkey '^[[F'    end-of-line                             # end        go to the end of line
+bindkey '^[OA'    z4h-up-line-or-beginning-search-local   # up         prev command in local history
+bindkey '^[OB'    z4h-down-line-or-beginning-search-local # down       next command in local history
 bindkey '^?'      backward-delete-char                    # bs         delete one char backward
-bindkey '^[[3~'   delete-char                             # delete     delete one char forward
 bindkey '^[[1;5C' forward-word                            # ctrl+right go forward one word
 bindkey '^[[1;5D' backward-word                           # ctrl+left  go backward one word
-bindkey '^H'      backward-kill-word                      # ctrl+bs    delete previous word
-bindkey '^[[3;5~' kill-word                               # ctrl+del   delete next word
-bindkey '^K'      kill-line                               # ctrl+k     delete line after cursor
-bindkey '^J'      backward-kill-line                      # ctrl+j     delete line before cursor
-bindkey '^N'      kill-buffer                             # ctrl+n     delete all lines
-bindkey '^_'      undo                                    # ctrl+/     undo
-bindkey '^\'      redo                                    # ctrl+\     redo
+bindkey '^W'      backward-kill-word                      # ctrl+w     delete previous word
 bindkey '^[[1;5A' up-line-or-beginning-search             # ctrl+up    prev cmd in global history
 bindkey '^[[1;5B' down-line-or-beginning-search           # ctrl+down  next cmd in global history
-bindkey '^ '      z4h-expand-alias                        # ctrl+space expand alias
+bindkey '^E'      _expand_alias                           # ctrl+E     expand alias
+bindkey '^ '      end-of-line                             # ctrl+space go to the end of line
 bindkey '^[[1;3D' z4h-cd-back                             # alt+left   cd into the prev directory
 bindkey '^[[1;3C' z4h-cd-forward                          # alt+right  cd into the next directory
 bindkey '^[[1;3A' z4h-cd-up                               # alt+up     cd ..
-bindkey '\t'      z4h-expand-or-complete-with-dots        # tab        fzf-tab completion
+bindkey '\t'      fzf-tab-complete                        # tab        fzf-tab completion
 bindkey '^[[1;3B' fzf-cd-widget                           # alt+down   fzf cd
 bindkey '^T'      fzf-completion                          # ctrl+t     fzf file completion
-bindkey '^R'      z4h-fzf-history-widget                  # ctrl+r     fzf history
-bindkey '^[h'     z4h-run-help                            # alt+h      help for the cmd at cursor
-bindkey '^[H'     z4h-run-help                            # alt+H      help for the cmd at cursor
+bindkey -M vicmd  'K'   run-help                          # normal-K   help for the cmd at cursor
 
 # Tell zsh-autosuggestions how to handle different widgets.
 typeset -g ZSH_AUTOSUGGEST_EXECUTE_WIDGETS=()
@@ -368,15 +278,13 @@ typeset -g ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(
   up-line-or-history
   down-line-or-history
   accept-line
-  z4h-fzf-history-widget
   z4h-up-line-or-beginning-search-local
   z4h-down-line-or-beginning-search-local
-  z4h-expand-alias
+  _expand_alias
   fzf-tab-complete
 )
 typeset -g ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
   forward-word
-  emacs-forward-word
   vi-forward-word
   vi-forward-word-end
   vi-forward-blank-word
@@ -404,23 +312,17 @@ if (( $#commands[(i)lesspipe(|.sh)] )); then
 fi
 
 # This affects every invocation of `less`.
-#
 #   -i   case-insensitive search unless search string contains uppercase letters
 #   -R   color
-#   -F   exit if there is less than one page of content
-#   -X   keep content on screen after exit
 #   -M   show more info at the bottom prompt line
 #   -x4  tabs are 4 instead of 8
-export LESS=-iRFXMx4
+export LESS=-iRMx4
 
 # Export variables.
 export PAGER=less
 
 typeset -gaU cdpath fpath mailpath path
 fpath+=($Z4H_DIR/zsh-users/zsh-completions/src)
-
-# Extend PATH.
-path+=($Z4H_DIR/junegunn/fzf/bin)
 
 # Initialize completions.
 autoload -Uz compinit
@@ -466,6 +368,16 @@ else
 fi
 alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 alias tree='tree -aC -I .git'
+
+alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
+alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
+alias psync="rsync -a --no-i-r --info=progress2 --partial"
+alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
+alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
+alias update-apt="sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'"
+
+[ -f ~/.additional.zsh ] && source ~/.additional.zsh
+[ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
 
 # Enable decent options. See http://zsh.sourceforge.net/Doc/Release/Options.html.
 emulate zsh                    # restore default options just in case something messed them up
