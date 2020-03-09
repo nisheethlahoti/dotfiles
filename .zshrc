@@ -198,6 +198,7 @@ function z4h-cd-up() { cd .. && z4h-redraw-prompt }
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search run-help
 (( $+aliases[run-help] )) && unalias run-help  # make alt-h binding more useful
 
+zle -C complete-file complete-word _generic
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 zle -N z4h-up-line-or-beginning-search-local
@@ -259,6 +260,7 @@ bindkey '^[[1;3C' z4h-cd-forward                          # alt+right  cd into t
 bindkey '^[[1;3A' z4h-cd-up                               # alt+up     cd ..
 bindkey '\t'      fzf-tab-complete                        # tab        fzf-tab completion
 bindkey '^[[1;3B' fzf-cd-widget                           # alt+down   fzf cd
+bindkey '^F'      complete-file                           # shift+t    default file completion
 bindkey '^T'      fzf-completion                          # ctrl+t     fzf file completion
 bindkey -M vicmd  'K'   run-help                          # normal-K   help for the cmd at cursor
 
@@ -338,6 +340,7 @@ zstyle ':completion:*:(rm|kill|diff):*' ignore-line     other
 zstyle ':completion:*:rm:*'             file-patterns   '*:all-files'
 zstyle ':completion::complete:*'        use-cache       on
 zstyle ':completion::complete:*'        cache-path      ${XDG_CACHE_HOME:-$HOME/.cache}/zcompcache-$ZSH_VERSION
+zstyle ':completion:complete-file::::'  completer       _files
 
 # Make it possible to use completion specifications and functions written for bash.
 autoload -Uz bashcompinit
