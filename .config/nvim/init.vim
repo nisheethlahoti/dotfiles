@@ -78,7 +78,6 @@ command -nargs=1 FloatMan call FloatingExec("Man! | Man", <q-args>)
 au BufEnter * if &keywordprg == ":help" | set keywordprg=:Help | endif
 au BufEnter * if &keywordprg == ":Man" | set keywordprg=:FloatMan | endif
 
-
 " Convert binary file to readable bytes output and vice-versa
 function Xxd()
 	if &binary
@@ -100,17 +99,6 @@ noremap <C-h> <C-w>h
 noremap <C-j> <C-w>j
 noremap <C-k> <C-w>k
 noremap <C-l> <C-w>l
-
-" Function to return better text on folds
-function FoldFn()
-	let lineinfo = "  ".(v:foldend + 1 - v:foldstart)." lines"
-	let len = ingo#window#dimensions#NetWindowWidth()-strlen(lineinfo)
-	let ftext = getline(v:foldstart)
-	return ftext[:len-1].repeat(&fcs[match(&fcs,"fold")+5], len-strlen(ftext)).lineinfo
-endfunction
-
-set foldtext=FoldFn()
-au ColorScheme * highlight Folded ctermfg=15 ctermbg=17
 
 " Paths of vim configuration file
 let $NVIMRC = "~/.config/nvim/init.vim"
@@ -155,7 +143,6 @@ au BufEnter * call deoplete#custom#source("ultisnips", "rank", 9999)  " Set high
 let g:UltiSnipsExpandTrigger = "<C-Space>"
 let g:UltiSnipsJumpForwardTrigger = "<C-Right>"
 let g:UltiSnipsJumpBackwardTrigger = "<C-Left>"
-
 
 " Use <Tab> and <S-Tab> keys for autocomplete
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
