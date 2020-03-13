@@ -198,7 +198,15 @@ function z4h-cd-up() { cd .. && z4h-redraw-prompt }
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search run-help
 (( $+aliases[run-help] )) && unalias run-help  # make alt-h binding more useful
 
-zle -C complete-file complete-word _generic
+function complete-file() {
+	local old_completer
+	zstyle -g old_completer ':completion:*' completer
+	zstyle ':completion:*' completer _files
+	zle fzf-tab-complete
+	zstyle ':completion:*' completer $old_completer
+}
+
+zle -N complete-file
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 zle -N z4h-up-line-or-beginning-search-local
@@ -340,7 +348,6 @@ zstyle ':completion:*:(rm|kill|diff):*' ignore-line     other
 zstyle ':completion:*:rm:*'             file-patterns   '*:all-files'
 zstyle ':completion::complete:*'        use-cache       on
 zstyle ':completion::complete:*'        cache-path      ${XDG_CACHE_HOME:-$HOME/.cache}/zcompcache-$ZSH_VERSION
-zstyle ':completion:complete-file::::'  completer       _files
 
 # Make it possible to use completion specifications and functions written for bash.
 autoload -Uz bashcompinit
