@@ -71,7 +71,13 @@ function z4h() {
       if [[ -d $Z4H_DIR/$repo ]]; then
         if (( update )); then
           print -ru2 -- ${(%):-"%F{3}z4h%f: updating %B${repo//\%/%%}%b"}
-          >&2 git -C $Z4H_DIR/$repo pull --recurse-submodules -j 8 || return
+          cd $Z4H_DIR/$repo && {
+            git fetch -p --recurse-submodules=on-demand -j 8 &&
+            git log master..origin/master --oneline --graph --shortstat | bat -p &&
+            git merge -q || return
+          } always {
+            cd - > /dev/null
+          }
         fi
       else
         print -ru2 -- ${(%):-"%F{3}z4h%f: installing %B${repo//\%/%%}%b"}
