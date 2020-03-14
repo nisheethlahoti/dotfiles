@@ -160,21 +160,21 @@ elif (( $+commands[brew] )); then
   }
 fi
 
-# The same as up-line-or-beginning-search but for local history.
-function z4h-up-line-or-beginning-search-local() {
+# The same as up-line-or-history but for local history.
+function z4h-up-line-or-history-local() {
   emulate -L zsh
   local last=$LASTWIDGET
   zle .set-local-history 1
-  () { local -h LASTWIDGET=$last; up-line-or-beginning-search "$@" } "$@"
+  () { local -h LASTWIDGET=$last; zle up-line-or-history "$@" } "$@"
   zle .set-local-history 0
 }
 
-# The same as down-line-or-beginning-search but for local history.
-function z4h-down-line-or-beginning-search-local() {
+# The same as down-line-or-history but for local history.
+function z4h-down-line-or-history-local() {
   emulate -L zsh
   local last=$LASTWIDGET
   zle .set-local-history 1
-  () { local -h LASTWIDGET=$last; down-line-or-beginning-search "$@" } "$@"
+  () { local -h LASTWIDGET=$last; zle down-line-or-history "$@" } "$@"
   zle .set-local-history 0
 }
 
@@ -201,7 +201,7 @@ function z4h-cd-back() { z4h-cd-rotate +1 }
 function z4h-cd-forward() { z4h-cd-rotate -0 }
 function z4h-cd-up() { cd .. && z4h-redraw-prompt }
 
-autoload -Uz up-line-or-beginning-search down-line-or-beginning-search run-help
+autoload -Uz up-line-or-history down-line-or-history run-help
 (( $+aliases[run-help] )) && unalias run-help  # make alt-h binding more useful
 
 function complete-file() {
@@ -213,10 +213,8 @@ function complete-file() {
 }
 
 zle -N complete-file
-zle -N up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-zle -N z4h-up-line-or-beginning-search-local
-zle -N z4h-down-line-or-beginning-search-local
+zle -N z4h-up-line-or-history-local
+zle -N z4h-down-line-or-history-local
 zle -N z4h-cd-back
 zle -N z4h-cd-forward
 zle -N z4h-cd-up
@@ -259,14 +257,14 @@ z4h source $Z4H_DIR/Aloxaf/fzf-tab/fzf-tab.zsh  # load fzf-tab-complete
 bindkey -s '^[[5~' ''
 bindkey -s '^[[6~' ''
 
-bindkey '^[OA'    z4h-up-line-or-beginning-search-local   # up         prev command in local history
-bindkey '^[OB'    z4h-down-line-or-beginning-search-local # down       next command in local history
+bindkey '^[OA'    z4h-up-line-or-history-local            # up         prev command in local history
+bindkey '^[OB'    z4h-down-line-or-history-local          # down       next command in local history
 bindkey '^?'      backward-delete-char                    # bs         delete one char backward
 bindkey '^[[1;5C' forward-word                            # ctrl+right go forward one word
 bindkey '^[[1;5D' backward-word                           # ctrl+left  go backward one word
 bindkey '^W'      backward-kill-word                      # ctrl+w     delete previous word
-bindkey '^[[1;5A' up-line-or-beginning-search             # ctrl+up    prev cmd in global history
-bindkey '^[[1;5B' down-line-or-beginning-search           # ctrl+down  next cmd in global history
+bindkey '^[[1;5A' up-line-or-history                      # ctrl+up    prev cmd in global history
+bindkey '^[[1;5B' down-line-or-history                    # ctrl+down  next cmd in global history
 bindkey '^E'      _expand_alias                           # ctrl+E     expand alias
 bindkey '^ '      end-of-line                             # ctrl+space go to the end of line
 bindkey '^[[1;3D' z4h-cd-back                             # alt+left   cd into the prev directory
@@ -284,17 +282,13 @@ typeset -g ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol
 typeset -g ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(
   history-search-forward
   history-search-backward
-  history-beginning-search-forward
-  history-beginning-search-backward
   history-substring-search-up
   history-substring-search-down
-  up-line-or-beginning-search
-  down-line-or-beginning-search
   up-line-or-history
   down-line-or-history
   accept-line
-  z4h-up-line-or-beginning-search-local
-  z4h-down-line-or-beginning-search-local
+  z4h-up-line-or-history-local
+  z4h-down-line-or-history-local
   _expand_alias
   fzf-tab-complete
 )
