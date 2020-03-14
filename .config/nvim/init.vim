@@ -179,9 +179,8 @@ au FileType rust noremap <Leader>r :!cargo run<CR>
 au FileType rust noremap <Leader>t :!cargo test<CR>
 au FileType rust noremap <Leader>c :!cargo clippy<CR>
 
-" Because default clang-format settings have 2 spaces
-au FileType c,cpp set tabstop=2
-au FileType c,cpp set shiftwidth=2
+" Because default clang-format settings, as well as my zshrc, have 2 spaces
+au FileType c,cpp,zsh set ts=2 | set sw=2 | set expandtab
 
 " Beautification
 let g:airline_theme='base16'

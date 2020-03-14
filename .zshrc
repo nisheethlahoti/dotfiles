@@ -9,16 +9,16 @@ emulate zsh -o posix_argzero -c ': ${Z4H_ZSH:=${${0#-}:-zsh}}' # command to star
 : ${Z4H_DIR:=~/.plugins/zsh}                                   # cache directory
 
 function update-apt() {
-	sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
+  sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
 }
 
 function update-all() {
-	update-apt
-	nvim -c PlugUpdate - < /dev/null
-	diff <(head -n $(cat ~/.zsh_history.bak | wc -l) ~/.zsh_history) ~/.zsh_history.bak > /dev/null &&
-	cp ~/.zsh_history ~/.zsh_history.bak &&
-	echo "Zsh history backed up"
-	z4h update
+  update-apt
+  nvim -c PlugUpdate - < /dev/null
+  diff <(head -n $(cat ~/.zsh_history.bak | wc -l) ~/.zsh_history) ~/.zsh_history.bak > /dev/null &&
+  cp ~/.zsh_history ~/.zsh_history.bak &&
+  echo "Zsh history backed up"
+  z4h update
 }
 
 function z4h() {
@@ -205,11 +205,11 @@ autoload -Uz up-line-or-history down-line-or-history run-help
 (( $+aliases[run-help] )) && unalias run-help  # make alt-h binding more useful
 
 function complete-file() {
-	local old_completer
-	zstyle -g old_completer ':completion:*' completer
-	zstyle ':completion:*' completer _files
-	zle fzf-tab-complete
-	zstyle ':completion:*' completer $old_completer
+  local old_completer
+  zstyle -g old_completer ':completion:*' completer
+  zstyle ':completion:*' completer _files
+  zle fzf-tab-complete
+  zstyle ':completion:*' completer $old_completer
 }
 
 zle -N complete-file
