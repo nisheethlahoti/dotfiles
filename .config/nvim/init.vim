@@ -48,8 +48,9 @@ nnoremap <silent> <Esc> :noh<CR>
 
 " Commands to do the intended thing on overly common typos
 command W w
-command Q q
+command -bang Q q<bang>
 command Wq wq
+command -bang Qa qa<bang>
 
 " Commands for editing, help, and terminal in new vertical window
 command -nargs=? -complete=file E vert new <args>
