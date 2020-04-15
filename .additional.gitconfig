@@ -3,6 +3,8 @@
 [mergetool]
 	prompt = false
 [mergetool "nvim"]
-	cmd = nvim -d $LOCAL $MERGED $REMOTE -c 'wincmd l | wincmd K'
+	cmd = nvim -f -d $MERGED $LOCAL $BASE $REMOTE -c 'wincmd K'
 [difftool "nvim"]
 	cmd = nvim -d $LOCAL $REMOTE
+[alias]
+	get = fetch -p --recurse-submodules
