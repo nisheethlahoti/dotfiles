@@ -12,6 +12,10 @@ function update-apt() {
   sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
 }
 
+function clean-snap() {
+  snap list --all | grep disabled | awk '{print "snap remove " $1 " --revision=" $3}' | sudo sh
+}
+
 function update-all() {
   update-apt
   nvim -c PlugUpdate - < /dev/null
