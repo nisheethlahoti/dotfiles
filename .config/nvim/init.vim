@@ -139,7 +139,6 @@ execute 'au FileType '.s:lc_filetypes.' call LanguageClientMaps()'
 
 " Mappings for ncm2 and ultisnips
 let g:deoplete#enable_at_startup = 1
-let g:deoplete#enable_refresh_always = 1
 au BufEnter * call deoplete#custom#source("ultisnips", "rank", 9999)  " Set highest priority for snippets
 let g:UltiSnipsExpandTrigger = "<C-Space>"
 let g:UltiSnipsJumpForwardTrigger = "<C-Right>"
