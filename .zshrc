@@ -77,7 +77,7 @@ function z4h() {
           print -ru2 -- ${(%):-"%F{3}z4h%f: updating %B${repo//\%/%%}%b"}
           cd $Z4H_DIR/$repo && {
             git fetch -p --recurse-submodules=on-demand -j 8 &&
-            git log master..origin/master --oneline --graph --shortstat | bat -p &&
+            git log master..origin/master --oneline --graph --shortstat &&
             git merge -q || return
           } always {
             cd - > /dev/null
@@ -334,9 +334,10 @@ fi
 # This affects every invocation of `less`.
 #   -i   case-insensitive search unless search string contains uppercase letters
 #   -R   color
+#   -F   exit if there is less than one page of content
 #   -M   show more info at the bottom prompt line
 #   -x4  tabs are 4 instead of 8
-export LESS=-iRMx4
+export LESS=-iRFMx4
 
 # Export variables.
 export PAGER=less
