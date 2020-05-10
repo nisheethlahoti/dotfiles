@@ -21,7 +21,8 @@ function update-all() {
   nvim -c PlugUpdate - < /dev/null
   diff <(head -n $(cat ~/.zsh_history.bak | wc -l) ~/.zsh_history) ~/.zsh_history.bak > /dev/null &&
   cp ~/.zsh_history ~/.zsh_history.bak &&
-  echo "Zsh history backed up"
+  echo "Zsh history backed up" ||
+  echo "WARNING: ZSH History modified. Not updating backup."
   z4h update
 }
 
