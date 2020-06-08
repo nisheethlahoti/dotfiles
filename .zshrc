@@ -405,6 +405,7 @@ alias psync="rsync -a --no-i-r --info=progress2 --partial"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
 
+[ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
 
