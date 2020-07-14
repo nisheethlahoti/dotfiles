@@ -19,6 +19,7 @@ set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
 set nofoldenable       " Folds off by default
 set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
+set completeopt+=noselect     " Prevent deoplete from autofilling sometimes
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 
 " See the difference between the current buffer and the file it has been loaded from
@@ -131,7 +132,7 @@ endfunction
 
 let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
-let g:LanguageClient_serverStderr = '/tmp/language_server.stderr'
+let g:LanguageClient_serverStderr = '/tmp/'.$USER.'.language_server.stderr'
 let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
 let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': ['pyls']}
 let s:lc_filetypes=join(keys(g:LanguageClient_serverCommands), ',')
