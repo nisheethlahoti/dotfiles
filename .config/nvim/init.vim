@@ -128,6 +128,7 @@ function LanguageClientMaps()
 	nnoremap <silent> <Leader>r :call LanguageClient_textDocument_rename()<CR>
 	nnoremap <silent> <Leader>f :call LanguageClient_textDocument_formatting()<CR>
 	nnoremap <silent> <Leader>u :call LanguageClient_textDocument_references()<CR>
+	nnoremap <silent> <Leader>a :call LanguageClient_textDocument_codeAction()<CR>
 endfunction
 
 let g:LanguageClient_autoStart = 1
