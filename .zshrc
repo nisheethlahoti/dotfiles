@@ -262,7 +262,6 @@ bindkey -r '^[c'                                         # remove unwanted bindi
 
 FZF_TAB_PREFIX=                                 # remove '·'
 FZF_TAB_SHOW_GROUP=brief                        # show group headers only for duplicate options
-FZF_TAB_SINGLE_GROUP=()                         # no colors and no header for a single group
 bindkey '\t' expand-or-complete                 # fzf-tab reads it during initialization
 z4h source $Z4H_DIR/Aloxaf/fzf-tab/fzf-tab.zsh  # load fzf-tab-complete
 
