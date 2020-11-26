@@ -407,6 +407,7 @@ alias tree='tree -aC -I .git'
 alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
 alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
 alias psync="rsync -a --no-i-r --info=progress2 --partial"
+alias ff="/usr/bin/ffmpeg -hide_banner"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
 alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries frame=coded_picture_number,pkt_pts_time"
