@@ -22,7 +22,7 @@ function update-all() {
 
   ! [ -f ~/.zsh_history.bak ] ||
 
-  diff <(head -n $(cat ~/.zsh_history.bak | wc -l) ~/.zsh_history | sed -E "s/^:[^:]+://g") <(~/.zsh_history.bak | sed -E "s/^:[^:]+://g") > /dev/null &&
+  diff <(head -n $(wc -l ~/.zsh_history.bak | awk '{print $1}') ~/.zsh_history | sed -E "s/^:[^:]+://g") <(sed -E "s/^:[^:]+://g" ~/.zsh_history.bak) > /dev/null &&
   cp ~/.zsh_history ~/.zsh_history.bak &&
   echo "Zsh history backed up" ||
   echo "WARNING: ZSH History modified. Not updating backup."
