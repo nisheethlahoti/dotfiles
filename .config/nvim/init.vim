@@ -22,7 +22,7 @@ set foldmethod=indent  " Fold according to file indent (Not using syntax because
 set completeopt+=noselect     " Prevent deoplete from autofilling sometimes
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 
-let g:python3_host_prog = '/usr/bin/python3'
+let g:python3_host_prog = $HOME.'/miniconda3/bin/python'
 
 " See the difference between the current buffer and the file it has been loaded from
 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
