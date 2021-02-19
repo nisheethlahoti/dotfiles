@@ -213,10 +213,6 @@ function z4h-cd-up() { cd .. && z4h-redraw-prompt }
 autoload -Uz up-line-or-history down-line-or-history run-help
 (( $+aliases[run-help] )) && unalias run-help  # make alt-h binding more useful
 
-function fzf-tab-automenu-unambiguous {
-  zle expand-or-complete || zle fzf-tab-complete
-}
-
 function complete-file() {
   local old_completer
   zstyle -g old_completer ':completion:*' completer
@@ -225,7 +221,6 @@ function complete-file() {
   zstyle ':completion:*' completer $old_completer
 }
 
-zle -N fzf-tab-automenu-unambiguous
 zle -N complete-file
 zle -N z4h-up-line-or-history-local
 zle -N z4h-down-line-or-history-local
@@ -283,7 +278,7 @@ bindkey '^ '      end-of-line                             # ctrl+space go to the
 bindkey '^[[1;3D' z4h-cd-back                             # alt+left   cd into the prev directory
 bindkey '^[[1;3C' z4h-cd-forward                          # alt+right  cd into the next directory
 bindkey '^[[1;3A' z4h-cd-up                               # alt+up     cd ..
-bindkey '\t'      fzf-tab-automenu-unambiguous            # tab        fzf-tab completion
+bindkey '\t'      fzf-tab-complete                        # tab        fzf-tab completion
 bindkey '^[[1;3B' fzf-cd-widget                           # alt+down   fzf cd
 bindkey '^F'      complete-file                           # shift+t    default file completion
 bindkey '^T'      fzf-completion                          # ctrl+t     fzf file completion
@@ -303,7 +298,7 @@ typeset -g ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(
   z4h-up-line-or-history-local
   z4h-down-line-or-history-local
   _expand_alias
-  fzf-tab-automenu-unambiguous
+  fzf-tab-complete
   complete-file
 )
 typeset -g ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
@@ -326,8 +321,6 @@ typeset -g ZSH_AUTOSUGGEST_IGNORE_WIDGETS=(
   yank
   yank-pop
   zle-\*
-  expand-or-complete
-  fzf-tab-complete
 )
 
 # Use lesspipe if available. It allows you to use less on binary files (zip archives, etc.).
