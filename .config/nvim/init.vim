@@ -137,7 +137,7 @@ let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/'.$USER.'.language_server.stderr'
 let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
-let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': ['pyls']}
+let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': [g:python3_host_prog, '-m', 'pyls']}
 let s:lc_filetypes=join(keys(g:LanguageClient_serverCommands), ',')
 execute 'au FileType '.s:lc_filetypes.' call LanguageClientMaps()'
 
