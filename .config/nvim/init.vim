@@ -186,6 +186,9 @@ au FileType rust noremap <Leader>c :!cargo clippy<CR>
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
 au FileType c,cpp,zsh set ts=2 | set sw=2 | set expandtab
 
+" Autoformat json
+au FileType json noremap <Leader>f :%!json_pp<CR>
+
 " Beautification
 let g:airline_theme='base16'
 au BufEnter * hi PreProc ctermfg=12
@@ -196,3 +199,4 @@ hi DiffDelete ctermbg=1 ctermfg=0
 hi DiffAdd ctermbg=2 ctermfg=0
 hi DiffChange ctermbg=11 ctermfg=0
 hi DiffText ctermbg=15 ctermfg=0 cterm=none
+hi SpellCap ctermbg=23
