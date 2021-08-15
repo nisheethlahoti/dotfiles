@@ -7,9 +7,8 @@ set shiftwidth=4       " Number of spaces to use for each step of (auto)indent
 set hlsearch           " Highlight the last search results
 set incsearch          " Incrementally advance cursor position while searching
 set inccommand=split   " Shows the effects of a command incrementally, as you type.
-set relativenumber     " Display every line's number relative to current
 set undofile           " Keep an undo file (undo changes after closing)
-set number             " If relativenumber is set, shows current line number.
+set number             " Display every line's number
 set lazyredraw         " Somehow makes scrolling faster.
 set mouse=a            " Enables the use of the mouse like a normal application
 set nowrap             " Disables word wrap
@@ -103,9 +102,6 @@ noremap <C-h> <C-w>h
 noremap <C-j> <C-w>j
 noremap <C-k> <C-w>k
 noremap <C-l> <C-w>l
-
-" Paths of vim configuration file
-let $NVIMRC = "~/.config/nvim/init.vim"
 
 " For netrw (and hence vinegar)
 let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap number'

@@ -406,6 +406,7 @@ alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
 alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries frame=coded_picture_number,pkt_pts_time"
 
+export NVIMRC=~/.config/nvim/init.vim
 [ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
