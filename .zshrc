@@ -16,6 +16,10 @@ function clean-snap() {
   snap list --all | grep disabled | awk '{print "snap remove " $1 " --revision=" $3}' | sudo sh
 }
 
+function pvtar() {
+	tar -cf - "$1" | pv -s $(du -sb "$1" | awk '{print $1}') ${@:2}
+}
+
 function update-all() {
   update-apt
   nvim -c PlugUpdate - < /dev/null
