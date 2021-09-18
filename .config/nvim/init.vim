@@ -180,7 +180,7 @@ au FileType rust noremap <Leader>t :!cargo test<CR>
 au FileType rust noremap <Leader>c :!cargo clippy<CR>
 
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
-au FileType c,cpp,zsh set ts=2 | set sw=2 | set expandtab
+au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
 
 " Autoformat json
 au FileType json noremap <Leader>f :%!json_pp<CR>
