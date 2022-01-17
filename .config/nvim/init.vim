@@ -133,7 +133,7 @@ let g:LanguageClient_autoStart = 1
 let g:LanguageClient_hasSnippetSupport = 1
 let g:LanguageClient_serverStderr = '/tmp/'.$USER.'.language_server.stderr'
 let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
-let g:LanguageClient_serverCommands = {'rust': ['rls'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': [g:python3_host_prog, '-m', 'pylsp']}
+let g:LanguageClient_serverCommands = {'rust': ['rust-analyzer'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': [g:python3_host_prog, '-m', 'pylsp']}
 let s:lc_filetypes=join(keys(g:LanguageClient_serverCommands), ',')
 execute 'au FileType '.s:lc_filetypes.' call LanguageClientMaps()'
 
@@ -175,7 +175,7 @@ call plug#begin('~/.plugins/neovim')
 call plug#end()
 
 " Rust running and compiling
-au FileType rust noremap <Leader>r :!cargo run<CR>
+au FileType rust noremap <Leader>R :!cargo run<CR>
 au FileType rust noremap <Leader>t :!cargo test<CR>
 au FileType rust noremap <Leader>c :!cargo clippy<CR>
 
