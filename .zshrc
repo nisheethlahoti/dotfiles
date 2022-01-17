@@ -20,6 +20,10 @@ function pvtar() {
 	tar -cf - "$1" | pv -s $(du -sb "$1" | awk '{print $1}') ${@:2}
 }
 
+function gitshow() {
+  git difftool ${1:-HEAD}~ ${1:-HEAD}
+}
+
 function update-all() {
   update-apt
   nvim -c PlugUpdate - < /dev/null
