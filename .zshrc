@@ -12,6 +12,10 @@ function update-apt() {
   sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
 }
 
+function update-brew() {
+  brew update && brew upgrade
+}
+
 function clean-snap() {
   snap list --all | grep disabled | awk '{print "snap remove " $1 " --revision=" $3}' | sudo sh
 }
@@ -25,7 +29,14 @@ function gitshow() {
 }
 
 function update-all() {
-  update-apt
+  case $(uname -s) in
+    Linux)
+      update-apt;;
+    Darwin)
+      update-brew;;
+    *)
+      echo "Unrecognized OS, skipping upgrade";;
+  esac
   nvim -c PlugUpdate - < /dev/null
 
   ! [ -f ~/.zsh_history.bak ] ||
