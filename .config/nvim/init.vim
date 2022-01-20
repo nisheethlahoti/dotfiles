@@ -6,7 +6,7 @@ set shiftwidth=4       " Number of spaces to use for each step of (auto)indent
 set inccommand=split   " Shows the effects of a command incrementally, as you type.
 set undofile           " Keep an undo file (undo changes after closing)
 set number             " Display every line's number
-set lazyredraw         " Somehow makes scrolling faster.
+set lazyredraw         " Don't draw while executing macros (making them faster)
 set mouse=a            " Enables the use of the mouse like a normal application
 set nowrap             " Disables word wrap
 set scrolloff=5        " Minimal number of screen lines to keep around the cursor
@@ -17,6 +17,7 @@ set nofoldenable       " Folds off by default
 set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 
+let mapleader = " "
 let g:python3_host_prog = $HOME.'/miniconda3/bin/python'
 
 " See the difference between the current buffer and the file it has been loaded from
@@ -117,15 +118,16 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}  " List of snippets
 	Plug 'tpope/vim-fugitive'         " Git usage integration
 	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
-	Plug 'scrooloose/nerdcommenter'   " Commenting out code
+	Plug 'tpope/vim-commentary'       " Commenting out code
 	Plug 'tpope/vim-vinegar'          " Browsing files
-	Plug 'vim-scripts/ingo-library'   " Common functions for vimscript
-	Plug 'vim-airline/vim-airline'    " Better status line
-	Plug 'vim-airline/vim-airline-themes'
+	Plug 'tpope/vim-repeat'           " Use '.' with vim-surround
+	Plug 'nvim-lualine/lualine.nvim'  " Better status line
 	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
 	Plug 'junegunn/fzf.vim'           " Vim bindings for fzf
 	Plug 'neovim/nvim-lspconfig'      " Configs for common (nearly all) langservers
 	Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}  " Autocomplete
+	Plug 'nvim-lua/plenary.nvim'      " Common functions for neovim
+	Plug 'lewis6991/gitsigns.nvim'    " Provides git hunk object and shows if lines changed
 
 	" Language-specific
 	Plug 'cespare/vim-toml'
@@ -133,7 +135,6 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'vlaadbrain/gnuplot.vim'
 call plug#end()
 
-" lsp client setup
 lua << EOF
 	local function on_attach(client, buf)
 		local function map_to(key, cmd)
@@ -168,7 +169,13 @@ lua << EOF
 	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'})
 	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'})
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
+
+	require('lualine').setup{options={theme='nord'}}
+	require('gitsigns').setup()
 EOF
+
+" Shows if folded lines have changed
+set foldtext=gitgutter#fold#foldtext()
 
 " Rust running and compiling
 au FileType rust noremap <Leader>R :!cargo run<CR>
@@ -182,11 +189,10 @@ au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
 au FileType json noremap <Leader>f :%!json_pp<CR>
 
 " Beautification
-let g:airline_theme='base16'
 au BufEnter * hi PreProc ctermfg=12
 hi PMenu ctermbg=13
 hi CursorLine cterm=none ctermbg=8 ctermfg=none
-hi Visual ctermbg=4 cterm=reverse
+hi Visual ctermbg=none cterm=reverse
 hi DiffDelete ctermbg=1 ctermfg=0
 hi DiffAdd ctermbg=2 ctermfg=0
 hi DiffChange ctermbg=11 ctermfg=0
