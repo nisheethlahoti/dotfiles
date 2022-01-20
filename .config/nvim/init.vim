@@ -1,11 +1,8 @@
 " Basics
-set hidden             " Switch to other buffers even when current has been changed
 set breakindent        " Wrapped part of any line also appears indented
 set linebreak          " When wrapping text, break on word boundaries
 set tabstop=4          " Number of spaces that a <Tab> in the file counts for
 set shiftwidth=4       " Number of spaces to use for each step of (auto)indent
-set hlsearch           " Highlight the last search results
-set incsearch          " Incrementally advance cursor position while searching
 set inccommand=split   " Shows the effects of a command incrementally, as you type.
 set undofile           " Keep an undo file (undo changes after closing)
 set number             " Display every line's number
@@ -18,7 +15,6 @@ set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
 set nofoldenable       " Folds off by default
 set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
-set completeopt+=noselect     " Prevent deoplete from autofilling sometimes
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 
 let g:python3_host_prog = $HOME.'/miniconda3/bin/python'
@@ -111,68 +107,68 @@ set diffopt+=vertical     " Always opens diffs vertically
 
 " For fzf plugin (\o for opening file and \g for searching through files)
 noremap <Leader>o :Files<CR>
-noremap <Leader>l :Lines<CR>
+noremap <Leader>l :Rg<CR>
 noremap <Leader>h :History:<CR>
-command! -bang -nargs=* Files call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-command! -bang -nargs=* -complete=file Lines call fzf#vim#grep(
-	\ 'rg --line-number --no-heading --color=always "" '.<q-args>, 1,
-	\ fzf#vim#with_preview(), <bang>0)
 let g:fzf_layout = {'window': {'width': 0.8, 'height': 0.8, 'relative': 'editor'}}
-
-" For LanguageClient
-function LanguageClientMaps()
-	nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
-	nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-	nnoremap <silent> <Leader>r :call LanguageClient_textDocument_rename()<CR>
-	nnoremap <silent> <Leader>f :call LanguageClient_textDocument_formatting()<CR>
-	nnoremap <silent> <Leader>u :call LanguageClient_textDocument_references()<CR>
-	nnoremap <silent> <Leader>a :call LanguageClient_textDocument_codeAction()<CR>
-endfunction
-
-let g:LanguageClient_autoStart = 1
-let g:LanguageClient_hasSnippetSupport = 1
-let g:LanguageClient_serverStderr = '/tmp/'.$USER.'.language_server.stderr'
-let c_cpp_ls = ['clangd', '--clang-tidy', '--header-insertion=never']
-let g:LanguageClient_serverCommands = {'rust': ['rust-analyzer'], 'cpp': c_cpp_ls, 'c': c_cpp_ls, 'python': [g:python3_host_prog, '-m', 'pylsp']}
-let s:lc_filetypes=join(keys(g:LanguageClient_serverCommands), ',')
-execute 'au FileType '.s:lc_filetypes.' call LanguageClientMaps()'
-
-" Mappings for ncm2 and ultisnips
-let g:deoplete#enable_at_startup = 1
-au BufEnter * call deoplete#custom#source("ultisnips", "rank", 9999)  " Set highest priority for snippets
-let g:UltiSnipsExpandTrigger = "<C-Space>"
-let g:UltiSnipsJumpForwardTrigger = "<C-Right>"
-let g:UltiSnipsJumpBackwardTrigger = "<C-Left>"
-
-" Use <Tab> and <S-Tab> keys for autocomplete
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
 " Plugins
 call plug#begin('~/.plugins/neovim')
 	" General
-	Plug 'SirVer/ultisnips'           " Snippet manager
-	Plug 'honza/vim-snippets'         " List of snippets
+	Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}  " List of snippets
 	Plug 'tpope/vim-fugitive'         " Git usage integration
 	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
 	Plug 'scrooloose/nerdcommenter'   " Commenting out code
 	Plug 'tpope/vim-vinegar'          " Browsing files
 	Plug 'vim-scripts/ingo-library'   " Common functions for vimscript
-	Plug 'vim-scripts/IndexedSearch'  " Shows (m out of n matches) for searches
 	Plug 'vim-airline/vim-airline'    " Better status line
 	Plug 'vim-airline/vim-airline-themes'
 	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
 	Plug 'junegunn/fzf.vim'           " Vim bindings for fzf
-	Plug 'autozimu/LanguageClient-neovim', {'branch': 'next', 'do': 'bash install.sh'}
-	Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}  " Asynchronous completion framework
+	Plug 'neovim/nvim-lspconfig'      " Configs for common (nearly all) langservers
+	Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}  " Autocomplete
 
 	" Language-specific
-	Plug 'Shougo/neco-syntax'
-	Plug 'Shougo/neco-vim'
 	Plug 'cespare/vim-toml'
 	Plug 'rust-lang/rust.vim'
 	Plug 'vlaadbrain/gnuplot.vim'
 call plug#end()
+
+" lsp client setup
+lua << EOF
+	local function on_attach(client, buf)
+		local function map_to(key, cmd)
+			local flags = {noremap=true, silent=true}
+			vim.api.nvim_buf_set_keymap(buf, 'n', key, '<cmd>lua '..cmd..'()<CR>', flags)
+		end
+
+		map_to('K', 'vim.lsp.buf.hover')
+		map_to('gd', 'vim.lsp.buf.definition')
+		map_to('<Leader>r', 'vim.lsp.buf.rename')
+		map_to('<Leader>f', 'vim.lsp.buf.formatting')
+		map_to('<Leader>u', 'vim.lsp.buf.references')
+		map_to('<Leader>a', 'vim.lsp.buf.code_action')
+		map_to('<Leader>D', 'vim.lsp.buf.type_definition')
+		map_to('[d', 'vim.diagnostic.goto_prev')
+		map_to(']d', 'vim.diagnostic.goto_next')
+	end
+
+	vim.g.coq_settings = {
+		auto_start='shut-up',
+		limits={completion_auto_timeout=0.2},
+		keymap={jump_to_mark='<c-right>'}
+	}
+	local lsp = require("lspconfig")
+	local coq = require("coq")
+
+	local function lsp_set(name, cmd)
+		lsp[name].setup(coq.lsp_ensure_capabilities{cmd=cmd, on_attach=on_attach})
+	end
+
+	lsp_set('rust_analyzer', {'rust_analyzer'})
+	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'})
+	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'})
+	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
+EOF
 
 " Rust running and compiling
 au FileType rust noremap <Leader>R :!cargo run<CR>
