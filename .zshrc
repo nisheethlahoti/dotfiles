@@ -428,9 +428,11 @@ alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries
 export NVIMRC=~/.config/nvim/init.vim
 export EDITOR=nvim
 export VISUAL=nvim
+[ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
+[ ${path[(i)$HOME/.local/bin]} -gt ${#path} ] && path=(~/.local/bin $path)
 
 # Enable decent options. See http://zsh.sourceforge.net/Doc/Release/Options.html.
 emulate zsh                    # restore default options just in case something messed them up
