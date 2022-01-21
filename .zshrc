@@ -13,7 +13,7 @@ function update-apt() {
 }
 
 function update-brew() {
-  brew update && brew upgrade
+  brew update && brew upgrade && brew cleanup -s --prune=all
 }
 
 function clean-snap() {
