@@ -156,8 +156,9 @@ lua << EOF
 
 	vim.g.coq_settings = {
 		auto_start='shut-up',
-		limits={completion_auto_timeout=0.2},
-		keymap={jump_to_mark='<c-right>'}
+		limits={completion_auto_timeout=0.3},
+		keymap={jump_to_mark='<c-right>'},
+    clients={lsp={weight_adjust=2.0}, snippets={weight_adjust=1.0}}
 	}
 	local lsp = require("lspconfig")
 	local coq = require("coq")
