@@ -102,6 +102,7 @@ noremap <C-l> <C-w>l
 
 " For netrw (and hence vinegar)
 let g:netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap number'
+au FileType netrw setl bufhidden=delete
 
 " For fugitive plugin
 set diffopt+=vertical     " Always opens diffs vertically
