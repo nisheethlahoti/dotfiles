@@ -428,6 +428,8 @@ alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries
 export NVIMRC=~/.config/nvim/init.vim
 export EDITOR=nvim
 export VISUAL=nvim
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
 [ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
