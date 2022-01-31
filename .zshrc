@@ -393,9 +393,6 @@ fi
 POWERLEVEL9K_LEFT_PROMPT_ELEMENTS+=(command_execution_time time)
 POWERLEVEL9K_TIME_FORMAT="%D{%d/%m %H:%M:%S}"
 POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
-POWERLEVEL9K_CONTEXT_ROOT_TEMPLATE="%n@%M"
-POWERLEVEL9K_CONTEXT_REMOTE_TEMPLATE="%n@%M"
-POWERLEVEL9K_CONTEXT_REMOTE_SUDO_TEMPLATE="%n@%M"
 function p10k-on-pre-prompt() { p10k display '1|2/left/prompt_char|2/right'=show '2/left/time|2/left/command_execution_time'=hide }
 function p10k-on-post-prompt() { p10k display '1|2/left/prompt_char|2/right'=hide '2/left/time|2/left/command_execution_time'=show }
 
