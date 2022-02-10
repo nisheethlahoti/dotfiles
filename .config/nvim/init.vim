@@ -217,6 +217,7 @@ au FileType json noremap <Leader>f :%!json_pp<CR>
 au BufEnter * hi PreProc ctermfg=12
 hi PMenu ctermbg=13
 hi CursorLine cterm=none ctermbg=8 ctermfg=none
+hi MatchParen cterm=underline ctermbg=none ctermfg=none
 hi Visual ctermbg=none cterm=reverse
 hi DiffDelete ctermbg=1 ctermfg=0
 hi DiffAdd ctermbg=2 ctermfg=0
