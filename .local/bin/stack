@@ -24,7 +24,7 @@ group.add_argument("--list", action="store_true", help="List all stacks")
 args = parser.parse_args()
 
 if args.list:
-    print(list(args.basedir.iterdir()))
+    print([p.name for p in args.basedir.iterdir()])
     exit(0)
 
 spath: Path = args.basedir / args.stack

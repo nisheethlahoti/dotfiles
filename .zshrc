@@ -421,6 +421,7 @@ alias ff="/usr/bin/ffmpeg -hide_banner"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
 alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries frame=coded_picture_number,pkt_pts_time"
+alias tempssh="ssh -o UserKnownHostsFile=/dev/null"
 
 export NVIMRC=~/.config/nvim/init.vim
 export EDITOR=nvim
