@@ -4,3 +4,4 @@ channels:
   - anaconda
   - conda-forge
 channel_priority: disabled
+auto_stack: 1
