@@ -15,30 +15,25 @@ parser.add_argument("stack", nargs="?", default="default", help=N_HELP)
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("--push", metavar="VAL", nargs="+", help=PUSH_HELP)
 group.add_argument("--pop", metavar="N", type=int, const="1", nargs="?", help=P_HELP)
-group.add_argument(
-    "--show", metavar="N", type=int, default="0", const=None, nargs="?", help=S_HELP
-)
+group.add_argument("--show", metavar="N", type=int, default=0, nargs="?", help=S_HELP)
 group.add_argument("--create", action="store_true", help="Create a new stack")
 group.add_argument("--delete", action="store_true", help="Delete an existing stack")
 group.add_argument("--list", action="store_true", help="List all stacks")
 args = parser.parse_args()
 
 if args.list:
-    print([p.name for p in args.basedir.iterdir()])
+    print("\n".join(p.name for p in args.basedir.iterdir()))
     exit(0)
 
 spath: Path = args.basedir / args.stack
 if args.create:
-    with open(spath, "x"):
-        pass
+    spath.touch(exist_ok=False)
 elif args.delete:
     spath.unlink()
 else:
-    with open(spath, "r") as stack:
-        lines = stack.readlines()
-
-    print("".join(lines[: args.pop or args.show]), end="")
+    lines = spath.read_text().split("\n")
+    print("\n".join(lines[: args.pop or args.show]))
     if args.push:
-        open(spath, "w").writelines([a + "\n" for a in args.push[::-1]] + lines)
+        spath.write_text("\n".join(args.push[::-1] + lines))
     elif args.pop:
-        open(spath, "w").writelines(lines[args.pop :])
+        spath.write_text("\n".join(lines[args.pop :]))
