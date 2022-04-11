@@ -12,6 +12,10 @@ function update-apt() {
   sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
 }
 
+function update-dnf() {
+  sudo sh -c 'dnf -y upgrade && dnf -y clean packages'
+}
+
 function update-brew() {
   brew update && brew upgrade && brew cleanup -s --prune=all
 }
@@ -31,11 +35,13 @@ function gitshow() {
 function update-all() {
   case $(uname -s) in
     Linux)
-      update-apt;;
-    Darwin)
-      update-brew;;
-    *)
-      echo "Unrecognized OS, skipping upgrade";;
+      case $(cat /etc/os-release | grep "^ID=" | sed "s/ID=//") in
+        ubuntu) update-apt;;
+        fedora) update-dnf;;
+        *) echo "Unrecognized linux flavor. Skipping upgrade"
+      esac;;
+    Darwin) update-brew;;
+    *) echo "Unrecognized OS, skipping upgrade";;
   esac
   nvim -c PlugUpdate - < /dev/null
 
