@@ -163,13 +163,17 @@ lua << EOF
 	local lsp = require("lspconfig")
 	local coq = require("coq")
 
-	local function lsp_set(name, cmd)
-		lsp[name].setup(coq.lsp_ensure_capabilities{cmd=cmd, on_attach=on_attach})
+	local function lsp_set(name, cmd, options)
+		lsp[name].setup(coq.lsp_ensure_capabilities{cmd=cmd, on_attach=on_attach, settings=options})
 	end
 
-	lsp_set('rust_analyzer', {'rust_analyzer'})
-	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'})
-	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'})
+	lsp_set('rust_analyzer', {'rust_analyzer'}, {})
+	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'}, {})
+	pylsp_settings = {
+		plugins={flake8={enabled=true}, pyflakes={enabled=false}, pycodestyle={enabled=false}},
+		configurationSources={'flake8'}
+	}
+	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'}, {pylsp=pylsp_settings})
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
 	require('lualine').setup{options={theme='nord'}}
