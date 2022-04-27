@@ -48,6 +48,10 @@ nnoremap <silent> <Esc> :noh<CR>
 " Delete buffer without destroying window layout
 command -bang Bdelete bp | bd<bang>#
 
+" Commands to change directory to current file's and back to global
+nnoremap <silent> <Leader>cd :lcd %:p:h \| pwd<CR>
+nnoremap <silent> <Leader>cD :exe "lcd" getcwd(-1, -1) \| pwd<CR>
+
 " Commands to do the intended thing on overly common typos
 command W w
 command -bang Q q<bang>
@@ -213,8 +217,8 @@ set foldtext=gitgutter#fold#foldtext()
 
 " Rust running and compiling
 au FileType rust noremap <Leader>R :!cargo run<CR>
-au FileType rust noremap <Leader>t :!cargo test<CR>
-au FileType rust noremap <Leader>c :!cargo clippy<CR>
+au FileType rust noremap <Leader>T :!cargo test<CR>
+au FileType rust noremap <Leader>C :!cargo clippy<CR>
 
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
 au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
