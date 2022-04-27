@@ -45,6 +45,9 @@ map <Leader>S :%s/\v
 " For clearing out last search highlight
 nnoremap <silent> <Esc> :noh<CR>
 
+" Delete buffer without destroying window layout
+command -bang Bdelete bp | bd<bang>#
+
 " Commands to do the intended thing on overly common typos
 command W w
 command -bang Q q<bang>
@@ -65,7 +68,7 @@ function FloatingExec(...) abort
 	\})
 	try
 		execute join(a:000, ' ')
-		set winhl=Normal:CursorLine
+		set winhl=Normal:PMenu
 		nnoremap <buffer> <silent> <Esc> :q<CR>
 	catch
 		quit
@@ -129,6 +132,7 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}  " Autocomplete
 	Plug 'nvim-lua/plenary.nvim'      " Common functions for neovim
 	Plug 'lewis6991/gitsigns.nvim'    " Provides git hunk object and shows if lines changed
+	Plug 'ray-x/lsp_signature.nvim'   " Show function signature as you type
 
 	" Language-specific
 	Plug 'cespare/vim-toml'
@@ -176,6 +180,7 @@ lua << EOF
 	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'}, {pylsp=pylsp_settings})
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
+	require('lsp_signature').setup()
 	require('lualine').setup{options={theme='nord'}}
 	require('gitsigns').setup{
 		on_attach=function(bufnr)
@@ -219,8 +224,7 @@ au FileType json noremap <Leader>f :%!json_pp<CR>
 
 " Beautification
 au BufEnter * hi PreProc ctermfg=12
-hi PMenu ctermbg=13
-hi CursorLine cterm=none ctermbg=8 ctermfg=none
+hi PMenu cterm=none ctermbg=8 ctermfg=none
 hi MatchParen cterm=underline ctermbg=none ctermfg=none
 hi Visual ctermbg=none cterm=reverse
 hi DiffDelete ctermbg=1 ctermfg=0
