@@ -14,7 +14,8 @@ set sidescroll=5       " Minimum number of characters to keep on screen
 set lcs+=extends:>     " Show marker if line extends beyond screen
 set matchpairs+=<:>    " Use '%' to navigate between '<' and '>'
 set nofoldenable       " Folds off by default
-set foldmethod=indent  " Fold according to file indent (Not using syntax because it is slow)
+set foldmethod=expr    " Fold according to given expression (treesitter)
+set foldexpr=nvim_treesitter#foldexpr()
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 
 let mapleader = " "
@@ -69,6 +70,7 @@ function FloatingExec(...) abort
 		\'col': float2nr(0.1 * &columns),
 		\'height': float2nr(0.8 * &lines),
 		\'width': float2nr(0.8 * &columns),
+	    \'border': 'rounded',
 	\})
 	try
 		execute join(a:000, ' ')
@@ -137,6 +139,8 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'nvim-lua/plenary.nvim'      " Common functions for neovim
 	Plug 'lewis6991/gitsigns.nvim'    " Provides git hunk object and shows if lines changed
 	Plug 'ray-x/lsp_signature.nvim'   " Show function signature as you type
+	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
+	Plug 'nvim-treesitter/nvim-treesitter-textobjects'  " Text-objects based on treesitter
 
 	" Language-specific
 	Plug 'cespare/vim-toml'
@@ -175,7 +179,7 @@ lua << EOF
 		lsp[name].setup(coq.lsp_ensure_capabilities{cmd=cmd, on_attach=on_attach, settings=options})
 	end
 
-	lsp_set('rust_analyzer', {'rust_analyzer'}, {})
+	lsp_set('rust_analyzer', {'rustup', 'run', 'nightly', 'rust-analyzer'}, {})
 	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'}, {})
 	pylsp_settings = {
 		plugins={flake8={enabled=true}, pyflakes={enabled=false}, pycodestyle={enabled=false}},
@@ -210,6 +214,35 @@ lua << EOF
 			map('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
 		end
 	}
+
+	require('nvim-treesitter.configs').setup{
+		ensure_installed = "all", -- A list of parser names, or "all"
+		highlight = {enable = true, additional_vim_regex_highlighting = false},
+		incremental_selection = {
+			enable = true,
+			keymaps = {node_incremental = "/", node_decremental = "?"},
+		},
+		textobjects = {
+			select = {
+				enable = true,
+				lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+				keymaps = {
+					["af"] = "@function.outer", ["if"] = "@function.inner",
+					["ac"] = "@class.outer", ["ic"] = "@class.inner",
+					["ab"] = "@block.outer", ["ib"] = "@block.inner",
+					["au"] = "@call.outer", ["iu"] = "@call.inner",
+				},
+			},
+			lsp_interop = {
+				enable = true,
+				border = "rounded",
+				peek_definition_code = {
+					["<leader>df"] = "@function.outer",
+					["<leader>dF"] = "@class.outer",
+				},
+			},
+		},
+	}
 EOF
 
 " Shows if folded lines have changed
@@ -227,7 +260,6 @@ au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
 au FileType json noremap <Leader>f :%!json_pp<CR>
 
 " Beautification
-au BufEnter * hi PreProc ctermfg=12
 hi PMenu cterm=none ctermbg=8 ctermfg=none
 hi MatchParen cterm=underline ctermbg=none ctermfg=none
 hi Visual ctermbg=none cterm=reverse
@@ -236,3 +268,24 @@ hi DiffAdd ctermbg=2 ctermfg=0
 hi DiffChange ctermbg=11 ctermfg=0
 hi DiffText ctermbg=15 ctermfg=0 cterm=none
 hi SpellCap ctermbg=23
+hi link FloatBorder PMenu
+
+hi PreProc ctermfg=10
+hi Include ctermfg=10 cterm=italic
+hi link Define Include
+hi link TSNamespace PreProc
+hi Macro ctermfg=10 cterm=bold
+hi Identifier ctermfg=none ctermbg=none cterm=none
+hi TSVariable ctermfg=15
+hi TSVariableBuiltin cterm=italic
+hi Function ctermfg=14 cterm=none
+hi TSFuncBuiltin ctermfg=14 cterm=italic
+hi Type ctermfg=12
+hi link TSConstructor Function
+hi TSLiteral ctermfg=13
+hi! link String TSLiteral
+hi! link Number TSLiteral
+hi Constant ctermfg=7
+hi TSConstBuiltin ctermfg=7 cterm=italic
+hi Comment ctermfg=9 cterm=italic
+hi Special ctermfg=3
