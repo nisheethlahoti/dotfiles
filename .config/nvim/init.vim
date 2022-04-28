@@ -126,21 +126,22 @@ let g:fzf_layout = {'window': {'width': 0.8, 'height': 0.8, 'relative': 'editor'
 call plug#begin('~/.plugins/neovim')
 	" General
 	Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}  " List of snippets
-	Plug 'tpope/vim-fugitive'         " Git usage integration
-	Plug 'tpope/vim-surround'         " Surrounding with parentheses/HTML-tags etc.
-	Plug 'tpope/vim-commentary'       " Commenting out code
-	Plug 'tpope/vim-vinegar'          " Browsing files
-	Plug 'tpope/vim-repeat'           " Use '.' with vim-surround
-	Plug 'nvim-lualine/lualine.nvim'  " Better status line
-	Plug 'junegunn/fzf', {'do': './install --all'}  " Fuzzy finder
-	Plug 'junegunn/fzf.vim'           " Vim bindings for fzf
-	Plug 'neovim/nvim-lspconfig'      " Configs for common (nearly all) langservers
-	Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}  " Autocomplete
-	Plug 'nvim-lua/plenary.nvim'      " Common functions for neovim
-	Plug 'lewis6991/gitsigns.nvim'    " Provides git hunk object and shows if lines changed
-	Plug 'ray-x/lsp_signature.nvim'   " Show function signature as you type
+	Plug 'tpope/vim-fugitive'                             " Git usage integration
+	Plug 'tpope/vim-surround'                             " Surround with parentheses/HTML-tags etc.
+	Plug 'tpope/vim-commentary'                           " Commenting out code
+	Plug 'tpope/vim-vinegar'                              " Browsing files
+	Plug 'tpope/vim-repeat'                               " Use '.' with vim-surround
+	Plug 'nvim-lualine/lualine.nvim'                      " Better status line
+	Plug 'junegunn/fzf', {'do': './install --all'}        " Fuzzy finder
+	Plug 'junegunn/fzf.vim'                               " Vim bindings for fzf
+	Plug 'neovim/nvim-lspconfig'                          " Configs for nearly all langservers
+	Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}             " Autocomplete
+	Plug 'nvim-lua/plenary.nvim'                          " Common functions for neovim
+	Plug 'lewis6991/gitsigns.nvim'                        " hunk object and signs for changed lines
+	Plug 'ray-x/lsp_signature.nvim'                       " Show function signature as you type
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
-	Plug 'nvim-treesitter/nvim-treesitter-textobjects'  " Text-objects based on treesitter
+	Plug 'nvim-treesitter/nvim-treesitter-textobjects'    " Text-objects based on treesitter
+	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
 
 	" Language-specific
 	Plug 'cespare/vim-toml'
