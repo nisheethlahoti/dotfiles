@@ -142,10 +142,11 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
 	Plug 'nvim-treesitter/nvim-treesitter-textobjects'    " Text-objects based on treesitter
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
+	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
+	Plug 'rcarriga/nvim-dap-ui'                           " Frontend for nvim-dap
 
 	" Language-specific
-	Plug 'cespare/vim-toml'
-	Plug 'rust-lang/rust.vim'
+	Plug 'simrat39/rust-tools.nvim'
 	Plug 'vlaadbrain/gnuplot.vim'
 call plug#end()
 
@@ -244,6 +245,42 @@ lua << EOF
 			},
 		},
 	}
+
+	dap = require('dap')
+	dap.adapters.python = {
+		type = 'executable',
+		command = vim.g.python3_host_prog,
+		args = { '-m', 'debugpy.adapter' },
+	}
+	dap.configurations.python = {{
+		-- nvim-dap options
+		type = 'python', -- the type here established the link to the adapter definition: `dap.adapters.python`
+		request = 'launch',
+		name = "Launch file",
+		-- debugpy options, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings
+		program = "${file}", -- This configuration will launch the current file if used.
+		args = function()
+			infile = vim.fn.input('Arguments file: ')
+			return infile == '' and {} or vim.fn.readfile(infile)
+		end,
+		pythonPath = function() return vim.fn.system("which python3"):sub(1, -2) end,
+	}}
+	
+    -- DAP Mappings
+	dapui = require("dapui")
+	dapui.setup()
+	vim.keymap.set("n", "sc", function() dap.continue() ; dapui.open() end)
+	vim.keymap.set("n", "sn", dap.step_over)
+	vim.keymap.set("n", "ss", dap.step_into)
+	vim.keymap.set("n", "sr", dap.step_out)
+	vim.keymap.set("n", "sb", dap.toggle_breakpoint)
+	vim.keymap.set("n", "sR", dap.repl.open)
+	vim.keymap.set("n", "sw", dapui.toggle)
+	vim.keymap.set("n", "sl", function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
+	vim.keymap.set("n", "sB", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end)
+	vim.keymap.set("n", "sq", function() dap.terminate() ; dapui.close() end)
+
+	require('rust-tools').setup()  -- Not used yet, figure out if better conf required
 EOF
 
 " Shows if folded lines have changed
