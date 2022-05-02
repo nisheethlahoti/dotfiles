@@ -283,6 +283,10 @@ lua << EOF
 	require('rust-tools').setup()  -- Not used yet, figure out if better conf required
 EOF
 
+" For tmux-like "zooming"
+nnoremap <silent> st :tab split<CR>
+nnoremap <silent> sT :tabclose<CR>
+
 " Shows if folded lines have changed
 set foldtext=gitgutter#fold#foldtext()
 
