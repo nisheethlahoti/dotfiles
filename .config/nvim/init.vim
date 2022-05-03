@@ -190,7 +190,7 @@ lua << EOF
 	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'}, {pylsp=pylsp_settings})
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
-	require('lsp_signature').setup()
+	require('lsp_signature').setup{toggle_key="<C-x>"}
 	require('lualine').setup{options={theme='nord'}}
 	require('gitsigns').setup{
 		on_attach=function(bufnr)
