@@ -331,3 +331,5 @@ hi Constant ctermfg=7
 hi TSConstBuiltin ctermfg=7 cterm=italic
 hi Comment ctermfg=9 cterm=italic
 hi Special ctermfg=3
+hi link yamlTSField TSLabel  " Consistent with JSON
+hi yamlTSString ctermfg=15
