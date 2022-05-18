@@ -269,23 +269,27 @@ lua << EOF
     -- DAP Mappings
 	dapui = require("dapui")
 	dapui.setup()
-	vim.keymap.set("n", "sc", function() dap.continue() ; dapui.open() end)
-	vim.keymap.set("n", "sn", dap.step_over)
-	vim.keymap.set("n", "ss", dap.step_into)
-	vim.keymap.set("n", "sr", dap.step_out)
-	vim.keymap.set("n", "sb", dap.toggle_breakpoint)
-	vim.keymap.set("n", "sR", dap.repl.open)
-	vim.keymap.set("n", "sw", dapui.toggle)
-	vim.keymap.set("n", "sl", function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
-	vim.keymap.set("n", "sB", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end)
-	vim.keymap.set("n", "sq", function() dap.terminate() ; dapui.close() end)
+	dapmap = {
+		c = function() dap.continue() ; dapui.open() end,
+		n = dap.step_over,
+		s = dap.step_into,
+		r = dap.step_out,
+		b = dap.toggle_breakpoint,
+		R = dap.repl.open,
+		w = dapui.toggle,
+		l = function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+		B = function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
+		q = function() dap.terminate() ; dapui.close() end,
+		-- For tmux-like zooming
+		t = ":tab split<CR>",
+		T = ":tabclose<CR>",
+	}
+	for key, val in pairs(dapmap) do
+		vim.keymap.set("n", "<BS>"..key, val)
+	end
 
 	require('rust-tools').setup()  -- Not used yet, figure out if better conf required
 EOF
-
-" For tmux-like "zooming"
-nnoremap <silent> st :tab split<CR>
-nnoremap <silent> sT :tabclose<CR>
 
 " Shows if folded lines have changed
 set foldtext=gitgutter#fold#foldtext()
