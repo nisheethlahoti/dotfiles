@@ -358,8 +358,8 @@ fi
 #   -R   color
 #   -F   exit if there is less than one page of content
 #   -M   show more info at the bottom prompt line
-#   -x4  tabs are 4 instead of 8
-export LESS=-iRFMx4
+#   -x4  tabs are 4 spaces wide instead of 8
+export LESS="-iRFMx4 --mouse"
 
 # Export variables.
 export PAGER=less
