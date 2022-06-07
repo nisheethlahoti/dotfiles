@@ -421,7 +421,7 @@ alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 alias tree='tree -aC -I .git'
 
 alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
-alias tcpython="LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
+alias tcpython="TCMALLOC_LARGE_ALLOC_REPORT_THRESHOLD=8000000000 LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
 alias psync="rsync -a --no-i-r --info=progress2 --partial"
 alias ff="/usr/bin/ffmpeg -hide_banner"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
