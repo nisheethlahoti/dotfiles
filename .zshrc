@@ -402,6 +402,7 @@ POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
 function p10k-on-pre-prompt() { p10k display '1|2/left/prompt_char|2/right'=show '2/left/time|2/left/command_execution_time'=hide }
 function p10k-on-post-prompt() { p10k display '1|2/left/prompt_char|2/right'=hide '2/left/time|2/left/command_execution_time'=show }
 
+POWERLEVEL9K_SHORTEN_STRATEGY=truncate_middle  # Default truncate_to_unique is nice but hangs on super-large dirs
 z4h source $Z4H_DIR/romkatv/powerlevel10k/powerlevel10k.zsh-theme
 
 z4h source $Z4H_DIR/zsh-users/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
