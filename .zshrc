@@ -32,6 +32,10 @@ function gitshow() {
   git difftool ${1:-HEAD}~ ${1:-HEAD}
 }
 
+function imgshow() {
+	ffmpeg -v warning -i "$1" -f image2pipe -c:v png - | img2sixel ${@:2}
+}
+
 function update-all() {
   case $(uname -s) in
     Linux)
