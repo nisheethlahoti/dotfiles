@@ -392,7 +392,7 @@ autoload -Uz bashcompinit
 bashcompinit
 
 # Enable iTerm2 shell integration if available.
-if [[ $TERM_PROGRAM == iTerm.app && -e ~/.iterm2_shell_integration.zsh ]]; then
+if [[ $TERM_PROGRAM == iTerm.app || $LC_TERMINAL == iTerm2 && -e ~/.iterm2_shell_integration.zsh ]]; then
   z4h source ~/.iterm2_shell_integration.zsh
 fi
 
@@ -439,6 +439,7 @@ export EDITOR=nvim
 export VISUAL=nvim
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+[ "${HOST##*internal*}" ] || export iterm2_hostname="$(hostname -f | sed -E 's/\.internal//')"
 [ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
