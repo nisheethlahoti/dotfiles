@@ -220,6 +220,7 @@ lua << EOF
 
 	require('nvim-treesitter.configs').setup{
 		ensure_installed = "all", -- A list of parser names, or "all"
+		ignore_install = {"phpdoc"},  -- Things that throw useless errors
 		highlight = {enable = true, additional_vim_regex_highlighting = false},
 		incremental_selection = {
 			enable = true,
