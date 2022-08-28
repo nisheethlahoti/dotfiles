@@ -162,7 +162,9 @@ lua << EOF
 		map_to('K', 'vim.lsp.buf.hover')
 		map_to('gd', 'vim.lsp.buf.definition')
 		map_to('<Leader>r', 'vim.lsp.buf.rename')
-		map_to('<Leader>f', 'vim.lsp.buf.formatting')
+		if client.resolved_capabilities.document_formatting then
+			map_to('<Leader>f', 'vim.lsp.buf.formatting')
+		end
 		map_to('<Leader>u', 'vim.lsp.buf.references')
 		map_to('<Leader>a', 'vim.lsp.buf.code_action')
 		map_to('<Leader>D', 'vim.lsp.buf.type_definition')
@@ -185,11 +187,7 @@ lua << EOF
 
 	lsp_set('rust_analyzer', {'rustup', 'run', 'nightly', 'rust-analyzer'}, {})
 	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'}, {})
-	pylsp_settings = {
-		plugins={flake8={enabled=true}, pyflakes={enabled=false}, pycodestyle={enabled=false}},
-		configurationSources={'flake8'}
-	}
-	lsp_set('pylsp', {vim.g.python3_host_prog, '-m', 'pylsp'}, {pylsp=pylsp_settings})
+	lsp_set('pyright', {"pyright-langserver", "--stdio"}, {})
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
 	require('lsp_signature').setup{toggle_key="<C-x>"}
@@ -300,6 +298,9 @@ set foldtext=gitgutter#fold#foldtext()
 au FileType rust noremap <Leader>R :!cargo run<CR>
 au FileType rust noremap <Leader>T :!cargo test<CR>
 au FileType rust noremap <Leader>C :!cargo clippy<CR>
+
+" Autoformat python
+au FileType python noremap <Leader>f :%!black -q -<CR>
 
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
 au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
