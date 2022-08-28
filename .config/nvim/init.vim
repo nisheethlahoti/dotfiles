@@ -146,6 +146,7 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
 	Plug 'rcarriga/nvim-dap-ui'                           " Frontend for nvim-dap
+	Plug 'rmagatti/auto-session'                          " Remote persistence for neovim
 
 	" Language-specific
 	Plug 'simrat39/rust-tools.nvim'
@@ -289,6 +290,7 @@ lua << EOF
 	end
 
 	require('rust-tools').setup()  -- Not used yet, figure out if better conf required
+    require("auto-session").setup{log_level = "error"}
 EOF
 
 " Shows if folded lines have changed
