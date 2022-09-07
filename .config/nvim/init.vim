@@ -177,7 +177,7 @@ lua << EOF
 		auto_start='shut-up',
 		limits={completion_auto_timeout=0.3},
 		keymap={jump_to_mark='<c-right>'},
-		clients={lsp={weight_adjust=2.0}, snippets={weight_adjust=1.0}}
+		clients={lsp={weight_adjust=2.0, resolve_timeout=0.25}, snippets={weight_adjust=1.0}}
 	}
 	local lsp = require("lspconfig")
 	local coq = require("coq")
@@ -303,7 +303,7 @@ au FileType rust noremap <Leader>T :!cargo test<CR>
 au FileType rust noremap <Leader>C :!cargo clippy<CR>
 
 " Autoformat python
-au FileType python noremap <Leader>f :%!black -q -<CR>
+au FileType python noremap <Leader>f :%!isort - \| black -q -<CR>
 
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
 au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
