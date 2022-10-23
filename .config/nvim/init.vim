@@ -142,6 +142,7 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'lewis6991/gitsigns.nvim'                        " hunk object and signs for changed lines
 	Plug 'ray-x/lsp_signature.nvim'                       " Show function signature as you type
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
+	Plug 'nvim-treesitter/playground'                     " Inspect treesitter highlights
 	Plug 'nvim-treesitter/nvim-treesitter-textobjects'    " Text-objects based on treesitter
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
@@ -163,8 +164,8 @@ lua << EOF
 		map_to('K', 'vim.lsp.buf.hover')
 		map_to('gd', 'vim.lsp.buf.definition')
 		map_to('<Leader>r', 'vim.lsp.buf.rename')
-		if client.resolved_capabilities.document_formatting then
-			map_to('<Leader>f', 'vim.lsp.buf.formatting')
+		if client.server_capabilities.documentFormattingProvider then
+			map_to('<Leader>f', 'vim.lsp.buf.format')
 		end
 		map_to('<Leader>u', 'vim.lsp.buf.references')
 		map_to('<Leader>a', 'vim.lsp.buf.code_action')
@@ -325,21 +326,20 @@ hi link FloatBorder PMenu
 hi PreProc ctermfg=10
 hi Include ctermfg=10 cterm=italic
 hi link Define Include
-hi link TSNamespace PreProc
+hi link @namespace PreProc
 hi Macro ctermfg=10 cterm=bold
 hi Identifier ctermfg=none ctermbg=none cterm=none
-hi TSVariable ctermfg=15
-hi TSVariableBuiltin cterm=italic
+hi @variable ctermfg=15
+hi @variable.builtin cterm=italic  " Not sure
 hi Function ctermfg=14 cterm=none
-hi TSFuncBuiltin ctermfg=14 cterm=italic
+hi @function.builtin ctermfg=14 cterm=italic
 hi Type ctermfg=12
-hi link TSConstructor Function
-hi TSLiteral ctermfg=13
-hi! link String TSLiteral
-hi! link Number TSLiteral
+hi link @constructor Function
+hi String ctermfg=13
+hi Number ctermfg=13
 hi Constant ctermfg=7
-hi TSConstBuiltin ctermfg=7 cterm=italic
+hi @constant.builtin ctermfg=7 cterm=italic
 hi Comment ctermfg=9 cterm=italic
 hi Special ctermfg=3
-hi link yamlTSField TSLabel  " Consistent with JSON
-hi yamlTSString ctermfg=15
+hi link @field.yaml @label  " Consistent with JSON
+hi @string.yaml ctermfg=15
