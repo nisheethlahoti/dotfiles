@@ -303,8 +303,8 @@ au FileType rust noremap <Leader>R :!cargo run<CR>
 au FileType rust noremap <Leader>T :!cargo test<CR>
 au FileType rust noremap <Leader>C :!cargo clippy<CR>
 
-" Autoformat python
-au FileType python noremap <Leader>f :%!isort - \| black -q -<CR>
+" Autoformat python (making sure that cursor doesn't jump either during the command or on undo)
+au FileType python noremap <Leader>f :let v=winsaveview() \| exe "normal i \<C-V><BS>" \| exe "%!isort - \| black -q -" \| call winrestview(v) <CR>
 
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
 au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
