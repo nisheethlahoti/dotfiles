@@ -127,7 +127,6 @@ let g:fzf_layout = {'window': {'width': 0.8, 'height': 0.8, 'relative': 'editor'
 " Plugins
 call plug#begin('~/.plugins/neovim')
 	" General
-	Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'}  " List of snippets
 	Plug 'tpope/vim-fugitive'                             " Git usage integration
 	Plug 'tpope/vim-surround'                             " Surround with parentheses/HTML-tags etc.
 	Plug 'tpope/vim-commentary'                           " Commenting out code
@@ -136,8 +135,6 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'nvim-lualine/lualine.nvim'                      " Better status line
 	Plug 'junegunn/fzf', {'do': './install --all'}        " Fuzzy finder
 	Plug 'junegunn/fzf.vim'                               " Vim bindings for fzf
-	Plug 'neovim/nvim-lspconfig'                          " Configs for nearly all langservers
-	Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}             " Autocomplete
 	Plug 'nvim-lua/plenary.nvim'                          " Common functions for neovim
 	Plug 'lewis6991/gitsigns.nvim'                        " hunk object and signs for changed lines
 	Plug 'ray-x/lsp_signature.nvim'                       " Show function signature as you type
@@ -152,39 +149,63 @@ call plug#begin('~/.plugins/neovim')
 	" Language-specific
 	Plug 'simrat39/rust-tools.nvim'
 	Plug 'vlaadbrain/gnuplot.vim'
+
+	" Autocomplete
+	Plug 'neovim/nvim-lspconfig'
+	Plug 'hrsh7th/cmp-nvim-lsp'
+	Plug 'hrsh7th/cmp-buffer'
+	Plug 'hrsh7th/cmp-path'
+	Plug 'hrsh7th/cmp-cmdline'
+	Plug 'hrsh7th/nvim-cmp'
 call plug#end()
 
 lua << EOF
+	-- Completion
+	local cmp = require'cmp'
+	cmp.setup({
+		mapping = cmp.mapping.preset.insert({
+			["<Tab>"] = cmp.mapping.select_next_item(),
+			["<S-Tab>"] = cmp.mapping.select_prev_item(),
+		}),
+		sources = cmp.config.sources({{name='nvim_lsp'}}, {{name='buffer'}}, {{name='path'}})
+	})
+
+	-- Use buffer source for `/` and `?` (Doesn't work on enabling `native_menu`).
+	cmp.setup.cmdline({'/', '?'}, {
+		mapping = cmp.mapping.preset.cmdline(),
+		sources = {{name = 'buffer'}}
+	})
+
+	-- Use cmdline & path source for ':' (Doesn't work on enabling `native_menu`).
+	cmp.setup.cmdline(':', {
+		mapping = cmp.mapping.preset.cmdline(),
+		sources = cmp.config.sources({{name = 'path'}}, {{name = 'cmdline'}})
+	})
+
+	-- Set up lspconfig.
 	local function on_attach(client, buf)
 		local function map_to(key, cmd)
-			local flags = {noremap=true, silent=true}
-			vim.api.nvim_buf_set_keymap(buf, 'n', key, '<cmd>lua '..cmd..'()<CR>', flags)
+			vim.keymap.set('n', key, cmd, {silent=true, buffer=buf})
 		end
 
-		map_to('K', 'vim.lsp.buf.hover')
-		map_to('gd', 'vim.lsp.buf.definition')
-		map_to('<Leader>r', 'vim.lsp.buf.rename')
+		map_to('K', vim.lsp.buf.hover)
+		map_to('gd', vim.lsp.buf.definition)
+		map_to('<Leader>r', vim.lsp.buf.rename)
 		if client.server_capabilities.documentFormattingProvider then
-			map_to('<Leader>f', 'vim.lsp.buf.format')
+			map_to('<Leader>f', vim.lsp.buf.format)
 		end
-		map_to('<Leader>u', 'vim.lsp.buf.references')
-		map_to('<Leader>a', 'vim.lsp.buf.code_action')
-		map_to('<Leader>D', 'vim.lsp.buf.type_definition')
-		map_to('[d', 'vim.diagnostic.goto_prev')
-		map_to(']d', 'vim.diagnostic.goto_next')
+		map_to('<Leader>u', vim.lsp.buf.references)
+		map_to('<Leader>a', vim.lsp.buf.code_action)
+		map_to('<Leader>D', vim.lsp.buf.type_definition)
+		map_to('[d', vim.diagnostic.goto_prev)
+		map_to(']d', vim.diagnostic.goto_next)
 	end
 
-	vim.g.coq_settings = {
-		auto_start='shut-up',
-		limits={completion_auto_timeout=0.3},
-		keymap={jump_to_mark='<c-right>'},
-		clients={lsp={weight_adjust=2.0, resolve_timeout=0.25}, snippets={weight_adjust=1.0}}
-	}
 	local lsp = require("lspconfig")
-	local coq = require("coq")
+	local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 	local function lsp_set(name, cmd, options)
-		lsp[name].setup(coq.lsp_ensure_capabilities{cmd=cmd, on_attach=on_attach, settings=options})
+		lsp[name].setup({cmd=cmd, on_attach=on_attach, settings=options, capabilities=capabilities})
 	end
 
 	lsp_set('rust_analyzer', {'rustup', 'run', 'nightly', 'rust-analyzer'}, {})
@@ -196,26 +217,24 @@ lua << EOF
 	require('lualine').setup{options={theme='nord'}}
 	require('gitsigns').setup{
 		on_attach=function(bufnr)
-			local function map(mode, lhs, rhs, opts)
-				opts = vim.tbl_extend('force', {noremap = true, silent = true}, opts or {})
-				vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, opts)
-			end
+			local expr_opts = {buffer=bufnr, silent=true, expr=true}
+			local opts = {buffer=bufnr, silent=true}
 
 			-- Navigation
-			map('', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", {expr=true})
-			map('', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", {expr=true})
+			vim.keymap.set('', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", expr_opts)
+			vim.keymap.set('', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", expr_opts)
 
 			-- Actions
-			map('n', '<leader>hs', '<cmd>Gitsigns stage_hunk<CR>')
-			map('n', '<leader>hr', '<cmd>Gitsigns reset_hunk<CR>')
-			map('n', '<leader>hu', '<cmd>Gitsigns undo_stage_hunk<CR>')
-			map('n', '<leader>hp', '<cmd>Gitsigns preview_hunk<CR>')
-			map('n', '<leader>tb', '<cmd>Gitsigns toggle_current_line_blame<CR>')
-			map('n', '<leader>td', '<cmd>Gitsigns toggle_deleted<CR>')
+			vim.keymap.set('n', '<leader>hs', '<cmd>Gitsigns stage_hunk<CR>', opts)
+			vim.keymap.set('n', '<leader>hr', '<cmd>Gitsigns reset_hunk<CR>', opts)
+			vim.keymap.set('n', '<leader>hu', '<cmd>Gitsigns undo_stage_hunk<CR>', opts)
+			vim.keymap.set('n', '<leader>hp', '<cmd>Gitsigns preview_hunk<CR>', opts)
+			vim.keymap.set('n', '<leader>tb', '<cmd>Gitsigns toggle_current_line_blame<CR>', opts)
+			vim.keymap.set('n', '<leader>td', '<cmd>Gitsigns toggle_deleted<CR>', opts)
 
 			-- Text object
-			map('o', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
-			map('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+			vim.keymap.set('o', 'ih', ':<C-U>Gitsigns select_hunk<CR>', opts)
+			vim.keymap.set('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>', opts)
 		end
 	}
 
@@ -269,7 +288,7 @@ lua << EOF
 		pythonPath = function() return vim.fn.system("which python3"):sub(1, -2) end,
 	}}
 	
-    -- DAP Mappings
+		-- DAP Mappings
 	dapui = require("dapui")
 	dapui.setup()
 	dapmap = {
@@ -292,7 +311,7 @@ lua << EOF
 	end
 
 	require('rust-tools').setup()  -- Not used yet, figure out if better conf required
-    require("auto-session").setup{log_level = "error"}
+	require("auto-session").setup{log_level = "error"}
 EOF
 
 " Shows if folded lines have changed
