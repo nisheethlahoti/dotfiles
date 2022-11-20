@@ -164,6 +164,7 @@ lua << EOF
 	local cmp = require'cmp'
 	cmp.setup({
 		mapping = cmp.mapping.preset.insert({
+			["<C-Space>"] = cmp.mapping.confirm(),
 			["<Tab>"] = cmp.mapping.select_next_item(),
 			["<S-Tab>"] = cmp.mapping.select_prev_item(),
 		}),
