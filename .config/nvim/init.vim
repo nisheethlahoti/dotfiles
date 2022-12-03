@@ -218,7 +218,7 @@ lua << EOF
 	require('lualine').setup{options={theme='nord'}}
 	require('gitsigns').setup{
 		on_attach=function(bufnr)
-			local expr_opts = {buffer=bufnr, silent=true, expr=true}
+			local expr_opts = {buffer=bufnr, silent=true, expr=true, replace_keycodes=false}
 			local opts = {buffer=bufnr, silent=true}
 
 			-- Navigation
