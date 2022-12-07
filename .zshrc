@@ -16,6 +16,10 @@ function update-dnf() {
   sudo sh -c 'dnf -y upgrade && dnf -y clean packages'
 }
 
+function update-yum() {
+  sudo sh -c 'yum -y update && yum -y clean packages'
+}
+
 function update-brew() {
   brew update && brew upgrade && brew cleanup -s --prune=all
 }
@@ -42,6 +46,7 @@ function update-all() {
       case $(cat /etc/os-release | grep "^ID=" | sed "s/ID=//") in
         ubuntu) update-apt;;
         fedora) update-dnf;;
+        amzn) update-yum;;
         *) echo "Unrecognized linux flavor. Skipping upgrade"
       esac;;
     Darwin) update-brew;;
