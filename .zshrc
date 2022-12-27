@@ -46,7 +46,7 @@ function update-all() {
       case $(cat /etc/os-release | grep "^ID=" | sed "s/ID=//") in
         ubuntu) update-apt;;
         fedora) update-dnf;;
-        amzn) update-yum;;
+        '"amzn"') update-yum;;
         *) echo "Unrecognized linux flavor. Skipping upgrade"
       esac;;
     Darwin) update-brew;;
