@@ -449,6 +449,7 @@ export LC_ALL=en_US.UTF-8
 [ "${HOST##*internal*}" ] || export iterm2_hostname="$(hostname -f | sed -E 's/\.internal//')"
 [ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
+[ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
 [ ${path[(i)$HOME/.local/bin]} -gt ${#path} ] && path=(~/.local/bin $path)
