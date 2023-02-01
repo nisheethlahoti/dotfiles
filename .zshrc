@@ -8,20 +8,19 @@ emulate zsh
 emulate zsh -o posix_argzero -c ': ${Z4H_ZSH:=${${0#-}:-zsh}}' # command to start zsh
 : ${Z4H_DIR:=~/.plugins/zsh}                                   # cache directory
 
-function update-apt() {
-  sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean'
-}
-
-function update-dnf() {
-  sudo sh -c 'dnf -y upgrade && dnf -y clean packages'
-}
-
-function update-yum() {
-  sudo sh -c 'yum -y update && yum -y clean packages'
-}
-
-function update-brew() {
-  brew update && brew upgrade && brew cleanup -s --prune=all
+function update-pkgs() {
+  case $(uname -s) in
+    Linux)
+      case $(cat /etc/os-release | grep "^ID=" | sed "s/ID=//") in
+        ubuntu) sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean';;
+        fedora) sudo sh -c 'dnf -y upgrade && dnf -y clean packages';;
+        '"amzn"') sudo sh -c 'yum -y update && yum -y clean packages';;
+        arch) sudo sh -c 'pacman -Syu && pacman -Scc';;
+        *) echo "Unrecognized linux flavor. Skipping upgrade"
+      esac;;
+    Darwin) brew update && brew upgrade && brew cleanup -s --prune=all;;
+    *) echo "Unrecognized OS, skipping upgrade";;
+  esac
 }
 
 function clean-snap() {
@@ -41,17 +40,7 @@ function imgshow() {
 }
 
 function update-all() {
-  case $(uname -s) in
-    Linux)
-      case $(cat /etc/os-release | grep "^ID=" | sed "s/ID=//") in
-        ubuntu) update-apt;;
-        fedora) update-dnf;;
-        '"amzn"') update-yum;;
-        *) echo "Unrecognized linux flavor. Skipping upgrade"
-      esac;;
-    Darwin) update-brew;;
-    *) echo "Unrecognized OS, skipping upgrade";;
-  esac
+  update-pkgs
   nvim -c PlugUpdate - < /dev/null
 
   ! [ -f ~/.zsh_history.bak ] ||
