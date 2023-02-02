@@ -92,11 +92,11 @@ au BufEnter * if &keywordprg == ":Man" | set keywordprg=:FloatMan | endif
 " Convert binary file to readable bytes output and vice-versa
 function Xxd()
 	if &binary
-		%!xxd
+		%!xxd -r
 		set nobinary
 	else
 		set binary
-		%!xxd -r
+		%!xxd
 	endif
 endfunction
 
