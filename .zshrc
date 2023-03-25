@@ -12,7 +12,7 @@ function update-pkgs() {
   case $(uname -s) in
     Linux)
       case $(cat /etc/os-release | grep "^ID=" | sed "s/ID=//") in
-        ubuntu) sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean';;
+        ubuntu) sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean ; snap refresh' ; clean-snap ;;
         fedora) sudo sh -c 'dnf -y upgrade && dnf -y clean packages';;
         '"amzn"') sudo sh -c 'yum -y update && yum -y clean packages';;
         arch) sudo sh -c 'pacman -Syu && pacman -Scc';;
@@ -24,7 +24,7 @@ function update-pkgs() {
 }
 
 function clean-snap() {
-  snap list --all | grep disabled | awk '{print "snap remove " $1 " --revision=" $3}' | sudo sh
+  snap list --all | grep disabled | awk '{print "snap remove " $1 " --purge --revision=" $3}' | sudo sh
 }
 
 function pvtar() {
