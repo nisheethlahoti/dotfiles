@@ -139,7 +139,6 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'lewis6991/gitsigns.nvim'                        " hunk object and signs for changed lines
 	Plug 'ray-x/lsp_signature.nvim'                       " Show function signature as you type
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
-	Plug 'nvim-treesitter/playground'                     " Inspect treesitter highlights
 	Plug 'nvim-treesitter/nvim-treesitter-textobjects'    " Text-objects based on treesitter
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
