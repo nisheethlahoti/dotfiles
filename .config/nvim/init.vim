@@ -211,6 +211,17 @@ lua << EOF
 	lsp_set('rust_analyzer', {'rustup', 'run', 'nightly', 'rust-analyzer'}, {})
 	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'}, {})
 	lsp_set('pyright', {"pyright-langserver", "--stdio"}, {})
+
+	-- Disable displaying "HINT" diagnostics
+	vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+	  vim.lsp.diagnostic.on_publish_diagnostics, {
+		virtual_text = {severity_limit = vim.diagnostic.severity.INFO},
+		signs = {severity_limit = vim.diagnostic.severity.INFO},
+		underline = true,
+		update_in_insert = false,
+	  }
+	)
+
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
 	require('lsp_signature').setup{toggle_key="<C-x>"}
