@@ -19,8 +19,8 @@ set foldexpr=nvim_treesitter#foldexpr()
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
 
 let mapleader = " "
-if isdirectory($HOME.'/miniconda3')
-	let g:python3_host_prog = $HOME.'/miniconda3/bin/python'
+if isdirectory($HOME.'/micromamba')
+	let g:python3_host_prog = $HOME.'/micromamba/bin/python'
 endif
 
 " See the difference between the current buffer and the file it has been loaded from
