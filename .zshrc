@@ -440,7 +440,6 @@ export LC_ALL=en_US.UTF-8
 [ -d ~/.local/lib/arcanist/bin ] && path=(~/.local/lib/arcanist/bin $path)
 [ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
-[ -d $HOME/miniconda3 ] && source $HOME/miniconda3/etc/profile.d/conda.sh && conda activate
 [ ${path[(i)$HOME/.local/bin]} -gt ${#path} ] && path=(~/.local/bin $path)
 
 # For managing node versions
@@ -469,3 +468,10 @@ setopt NO_FLOW_CONTROL         # disable start/stop characters in shell editor
 setopt PATH_DIRS               # perform path search even on command names with slashes
 setopt SHARE_HISTORY           # write and import history on every command
 setopt C_BASES                 # print hex/oct numbers as 0xFF/077 instead of 16#FF/8#77
+
+if [ -d $HOME/micromamba ]; then
+  export MAMBA_EXE="$(whence micromamba)";
+  export MAMBA_ROOT_PREFIX="$HOME/micromamba";
+  eval "$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
+  micromamba activate base
+fi
