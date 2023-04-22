@@ -50,9 +50,9 @@ function update-all() {
   echo "Zsh history backed up" ||
   echo "WARNING: ZSH History modified. Not updating backup."
 
-  z4h update
   nvm install stable --reinstall-packages-from=current
-  npm update
+  npm update -g
+  z4h update
 }
 
 function z4h() {
