@@ -143,6 +143,7 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
 	Plug 'rcarriga/nvim-dap-ui'                           " Frontend for nvim-dap
+	Plug 'L3MON4D3/LuaSnip'                               " Snippets
 	Plug 'rmagatti/auto-session'                          " Remote persistence for neovim
 
 	" Language-specific
@@ -156,18 +157,20 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'hrsh7th/cmp-path'
 	Plug 'hrsh7th/cmp-cmdline'
 	Plug 'hrsh7th/nvim-cmp'
+	Plug 'saadparwaiz1/cmp_luasnip'
 call plug#end()
 
 lua << EOF
 	-- Completion
 	local cmp = require'cmp'
 	cmp.setup({
+		snippet = {expand = function(args) require('luasnip').lsp_expand(args.body) end},
 		mapping = cmp.mapping.preset.insert({
 			["<C-Space>"] = cmp.mapping.confirm(),
 			["<Tab>"] = cmp.mapping.select_next_item(),
 			["<S-Tab>"] = cmp.mapping.select_prev_item(),
 		}),
-		sources = cmp.config.sources({{name='nvim_lsp'}}, {{name='buffer'}}, {{name='path'}})
+		sources = cmp.config.sources({{name='nvim_lsp'}, {name='luasnip'}}, {{name='buffer'}}, {{name='path'}})
 	})
 
 	-- Use buffer source for `/` and `?` (Doesn't work on enabling `native_menu`).
