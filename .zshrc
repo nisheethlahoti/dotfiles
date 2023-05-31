@@ -36,7 +36,12 @@ function gitshow() {
 }
 
 function imgshow() {
-	ffmpeg -v warning -i "$1" -f image2pipe -c:v png - | img2sixel ${@:2}
+  if [[ -f /usr/bin/ffmpeg ]] ; then
+    FFMPEG=/usr/bin/ffmpeg
+  else
+    FFMPEG=ffmpeg
+  fi
+  $FFMPEG -v warning -i "$1" -f image2pipe -c:v png - | img2sixel ${@:2}
 }
 
 function update-all() {
