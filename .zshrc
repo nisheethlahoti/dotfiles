@@ -480,3 +480,6 @@ if [ -d $HOME/micromamba ]; then
   eval "$("$MAMBA_EXE" shell hook --shell zsh --prefix "$HOME/micromamba" 2> /dev/null)"
   micromamba activate base
 fi
+
+
+export VIDFLAGS=(-b:v 0 -crf 18 -profile:v high444 -preset veryfast -tune zerolatency -movflags +faststart)
