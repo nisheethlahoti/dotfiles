@@ -35,15 +35,6 @@ function gitshow() {
   git difftool ${1:-HEAD}~ ${1:-HEAD}
 }
 
-function imgshow() {
-  if [[ -f /usr/bin/ffmpeg ]] ; then
-    FFMPEG=/usr/bin/ffmpeg
-  else
-    FFMPEG=ffmpeg
-  fi
-  $FFMPEG -v warning -i "$1" -f image2pipe -c:v png - | img2sixel ${@:2}
-}
-
 function update-all() {
   update-pkgs
   nvim -c PlugUpdate - < /dev/null
@@ -426,14 +417,22 @@ fi
 alias grep='grep --color=auto --exclude-dir={.bzr,CVS,.git,.hg,.svn}'
 alias tree='tree -aC -I .git'
 
+if [[ -f /usr/bin/ffmpeg ]] ; then
+  FFMPEG=/usr/bin/ffmpeg
+elif [[ -f /opt/homebrew/bin/ffmpeg ]] ; then
+  FFMPEG=/opt/homebrew/bin/ffmpeg
+else
+  FFMPEG=ffmpeg
+fi
+alias ffmpeg="$FFMPEG -hide_banner"
+
 alias config='git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
-alias tcpython="TCMALLOC_LARGE_ALLOC_REPORT_THRESHOLD=8000000000 LD_PRELOAD=\$(whereis libtcmalloc.so.4 | awk '{print \$2}') python"
 alias psync="rsync -a --no-i-r --info=progress2 --partial"
-alias ff="/usr/bin/ffmpeg -hide_banner"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
 alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries frame=coded_picture_number,pts_time"
 alias tempssh="ssh -o UserKnownHostsFile=/dev/null"
+alias ffprobe="ffprobe -hide_banner"
 
 export NVIMRC=~/.config/nvim/init.vim
 export EDITOR=nvim
