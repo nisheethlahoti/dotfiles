@@ -149,6 +149,7 @@ call plug#begin('~/.plugins/neovim')
 	" Language-specific
 	Plug 'simrat39/rust-tools.nvim'
 	Plug 'vlaadbrain/gnuplot.vim'
+	Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && npx --yes yarn install' }
 
 	" Autocomplete
 	Plug 'neovim/nvim-lspconfig'
