@@ -175,7 +175,7 @@ elif (( $+commands[brew] )); then
     [[ -n $TTY && ( -n $CONTINUOUS_INTEGRATION || -z $MC_SID ) ]] || return
     local repo
     repo="$(brew --repository 2>/dev/null)" || return
-    [[ -n $repo/Library/Taps/*/*/cmd/brew-command-not-found-init(|.rb)(#q.N) ]] || return
+    [[ -n $repo/Library/Taps/*/*/cmd/command-not-found-init(|.rb)(#q.N) ]] || return
     autoload -Uz is-at-least
     function command_not_found_handler() {
       emulate -L zsh
