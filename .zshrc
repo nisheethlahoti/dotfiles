@@ -296,13 +296,13 @@ bindkey '^[[1;5A' up-line-or-history                      # ctrl+up    prev cmd 
 bindkey '^[[1;5B' down-line-or-history                    # ctrl+down  next cmd in global history
 bindkey '^E'      _expand_alias                           # ctrl+E     expand alias
 bindkey '^ '      end-of-line                             # ctrl+space go to the end of line
-bindkey '^[[1;2D' z4h-cd-back                             # alt+left   cd into the prev directory
-bindkey '^[[1;2C' z4h-cd-forward                          # alt+right  cd into the next directory
-bindkey '^[[1;2A' z4h-cd-up                               # alt+up     cd ..
+bindkey '^[[1;2D' z4h-cd-back                             # ⇧+left     cd into the prev directory
+bindkey '^[[1;2C' z4h-cd-forward                          # ⇧+right    cd into the next directory
+bindkey '^[[1;2A' z4h-cd-up                               # ⇧+up       cd ..
+bindkey '^[[1;2B' fzf-cd-widget                           # ⇧+down     fzf cd
 bindkey '\t'      fzf-tab-complete                        # tab        fzf-tab completion
-bindkey '^[[1;2B' fzf-cd-widget                           # alt+down   fzf cd
-bindkey '^F'      complete-file                           # shift+t    default file completion
-bindkey '^T'      fzf-completion                          # ctrl+t     fzf file completion
+bindkey '^F'      complete-file                           # ctrl+f     fzf file completion
+bindkey '^T'      fzf-completion                          # ctrl+t     default fzf completion
 bindkey -M vicmd  'K'   run-help                          # normal-K   help for the cmd at cursor
 
 # Tell zsh-autosuggestions how to handle different widgets.
