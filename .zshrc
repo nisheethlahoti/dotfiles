@@ -286,8 +286,8 @@ z4h source $Z4H_DIR/Aloxaf/fzf-tab/fzf-tab.zsh  # load fzf-tab-complete
 bindkey -s '^[[5~' ''
 bindkey -s '^[[6~' ''
 
-bindkey '^[OA'    z4h-up-line-or-history-local            # up         prev command in local history
-bindkey '^[OB'    z4h-down-line-or-history-local          # down       next command in local history
+bindkey '^[[A'    z4h-up-line-or-history-local            # up         prev command in local history
+bindkey '^[[B'    z4h-down-line-or-history-local          # down       next command in local history
 bindkey '^?'      backward-delete-char                    # bs         delete one char backward
 bindkey '^[[1;9C' forward-word                            # opt+right  go forward one word
 bindkey '^[[1;9D' backward-word                           # opt+left   go backward one word
