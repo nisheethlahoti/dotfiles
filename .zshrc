@@ -289,11 +289,11 @@ bindkey -s '^[[6~' ''
 bindkey '^[OA'    z4h-up-line-or-history-local            # up         prev command in local history
 bindkey '^[OB'    z4h-down-line-or-history-local          # down       next command in local history
 bindkey '^?'      backward-delete-char                    # bs         delete one char backward
-bindkey '^[[1;5C' forward-word                            # ctrl+right go forward one word
-bindkey '^[[1;5D' backward-word                           # ctrl+left  go backward one word
+bindkey '^[[1;9C' forward-word                            # opt+right  go forward one word
+bindkey '^[[1;9D' backward-word                           # opt+left   go backward one word
 bindkey '^W'      backward-kill-word                      # ctrl+w     delete previous word
-bindkey '^[[1;5A' up-line-or-history                      # ctrl+up    prev cmd in global history
-bindkey '^[[1;5B' down-line-or-history                    # ctrl+down  next cmd in global history
+bindkey '^[[1;9A' up-line-or-history                      # opt+up     prev cmd in global history
+bindkey '^[[1;9B' down-line-or-history                    # opt+down   next cmd in global history
 bindkey '^E'      _expand_alias                           # ctrl+E     expand alias
 bindkey '^ '      end-of-line                             # ctrl+space go to the end of line
 bindkey '^[[1;2D' z4h-cd-back                             # ⇧+left     cd into the prev directory
