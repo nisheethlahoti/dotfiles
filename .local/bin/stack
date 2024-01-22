@@ -27,12 +27,13 @@ if args.list:
 
 spath: Path = args.basedir / args.stack
 if args.create:
+    spath.parent.mkdir(exist_ok=True, parents=True)
     spath.touch(exist_ok=False)
 elif args.delete:
     spath.unlink()
 else:
     lines = spath.read_text().split("\n")
-    print("\n".join(lines[: args.pop or args.show]))
+    print("\n".join(lines[:-1][: args.pop or args.show]))  # [:-1] to remove ending ""
     if args.push:
         spath.write_text("\n".join(args.push[::-1] + lines))
     elif args.pop:
