@@ -144,7 +144,7 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
 	Plug 'rcarriga/nvim-dap-ui'                           " Frontend for nvim-dap
 	Plug 'L3MON4D3/LuaSnip'                               " Snippets
-	Plug 'rmagatti/auto-session'                          " Remote persistence for neovim
+	" Plug 'rmagatti/auto-session'                          " Remote persistence for neovim
 
 	" Language-specific
 	Plug 'simrat39/rust-tools.nvim'
@@ -326,7 +326,7 @@ lua << EOF
 	end
 
 	require('rust-tools').setup()  -- Not used yet, figure out if better conf required
-	require("auto-session").setup{log_level = "error"}
+	-- require("auto-session").setup{log_level = "error"}
 EOF
 
 " Shows if folded lines have changed
@@ -353,7 +353,7 @@ hi Visual ctermbg=none cterm=reverse
 hi DiffDelete ctermbg=1 ctermfg=0
 hi DiffAdd ctermbg=2 ctermfg=0
 hi DiffChange ctermbg=11 ctermfg=0
-hi DiffText ctermbg=15 ctermfg=0 cterm=none
+hi DiffText ctermbg=3 ctermfg=0 cterm=none
 hi SpellCap ctermbg=23
 hi link FloatBorder PMenu
 
