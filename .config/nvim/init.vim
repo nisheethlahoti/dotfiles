@@ -353,7 +353,7 @@ hi Visual ctermbg=none cterm=reverse
 hi DiffDelete ctermbg=1 ctermfg=0
 hi DiffAdd ctermbg=2 ctermfg=0
 hi DiffChange ctermbg=11 ctermfg=0
-hi DiffText ctermbg=15 ctermfg=0 cterm=none
+hi DiffText ctermbg=3 ctermfg=0 cterm=none
 hi SpellCap ctermbg=23
 hi link FloatBorder PMenu
 
