@@ -141,6 +141,7 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
 	Plug 'nvim-treesitter/nvim-treesitter-textobjects'    " Text-objects based on treesitter
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
+	Plug 'nvim-neotest/nvim-nio'                          " Requirement for nvim-dap-ui
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
 	Plug 'rcarriga/nvim-dap-ui'                           " Frontend for nvim-dap
 	Plug 'L3MON4D3/LuaSnip'                               " Snippets
