@@ -347,34 +347,56 @@ au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
 " Autoformat json
 au FileType json noremap <Leader>f :%!json_pp<CR>
 
-" Beautification
+" Colorscheme
+" Colorscheme - Editor elements
 hi PMenu cterm=none ctermbg=8 ctermfg=none
-hi MatchParen cterm=underline ctermbg=none ctermfg=none
-hi Visual ctermbg=none cterm=reverse
-hi DiffDelete ctermbg=1 ctermfg=0
-hi DiffAdd ctermbg=2 ctermfg=0
-hi DiffChange ctermbg=11 ctermfg=0
-hi DiffText ctermbg=3 ctermfg=0 cterm=none
-hi SpellCap ctermbg=23
-hi link FloatBorder PMenu
+hi Visual cterm=reverse ctermbg=none ctermfg=none
+hi LineNr ctermfg=8
+hi DiagnosticError guifg=#ff8888
+hi DiagnosticHint ctermfg=7 guifg=NvimLightGrey3
 
-hi PreProc ctermfg=10
-hi Include ctermfg=10 cterm=italic
-hi link Define Include
-hi link @namespace PreProc
-hi Macro ctermfg=10 cterm=bold
-hi Identifier ctermfg=none ctermbg=none cterm=none
-hi @variable ctermfg=15
-hi @variable.builtin cterm=italic  " Not sure
-hi Function ctermfg=14 cterm=none
-hi @function.builtin ctermfg=14 cterm=italic
-hi Type ctermfg=12
-hi link @constructor Function
-hi String ctermfg=13
-hi Number ctermfg=13
-hi Constant ctermfg=7
-hi @constant.builtin ctermfg=7 cterm=italic
-hi Comment ctermfg=9 cterm=italic
-hi Special ctermfg=3
-hi link @field.yaml @label  " Consistent with JSON
-hi @string.yaml ctermfg=15
+" Colorscheme - Diff
+hi DiffDelete ctermbg=1 ctermfg=0 guibg=NvimDarkRed guifg=DarkRed
+hi DiffAdd ctermbg=2 ctermfg=0 guibg=NvimDarkGreen guifg=none
+hi DiffChange ctermbg=11 ctermfg=0 guibg=NvimDarkYellow guifg=none
+hi DiffText ctermbg=3 ctermfg=0 cterm=none guibg=#bb8800 guifg=NvimDarkGrey1
+
+" Colorscheme - Plaintext/identifiers
+hi Identifier ctermfg=15 cterm=none guifg=fg gui=none
+hi! link Type Identifier
+hi! link Constant Identifier
+hi! link Function Identifier
+
+" Colorscheme - Particular syntax
+hi PreProc ctermfg=10 guifg=NvimLightGreen
+hi String ctermfg=13 guifg=LightMagenta
+hi Comment ctermfg=3 cterm=italic guifg=#ddaaaa gui=italic
+
+" Colorscheme - Builtins
+hi @variable.builtin ctermfg=14 guifg=NvimLightCyan
+hi! link @attribute.builtin @variable.builtin
+hi! link @constant.builtin @variable.builtin
+hi! link @function.builtin @variable.builtin
+hi! link @module.builtin @variable.builtin
+hi! link @tag.builtin @variable.builtin
+hi! link @type.builtin @variable.builtin
+hi! link @variable.parameter.builtin @variable.builtin
+
+" Colorscheme - Generic syntax terms
+hi Special ctermfg=12 guifg=#aaccff
+hi! link Statement Special
+hi! link Number Special
+hi! link Boolean Special
+hi! link Delimiter Special
+hi! link Operator Special
+hi! link Include Keyword
+
+" Colorscheme - Link treesitter to sane defaults
+hi! link @float Float
+hi! link @include Include
+hi! link @repeat Repeat
+hi! link @variable Identifier
+hi! link @constructor Function
+
+" Colorscheme - Filetype-specific
+hi! link @string.yaml Identifier
