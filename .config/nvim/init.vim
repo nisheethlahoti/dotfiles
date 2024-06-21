@@ -72,11 +72,10 @@ function FloatingExec(...) abort
 		\'col': float2nr(0.1 * &columns),
 		\'height': float2nr(0.8 * &lines),
 		\'width': float2nr(0.8 * &columns),
-	    \'border': 'rounded',
+	    \'border': 'single',
 	\})
 	try
 		execute join(a:000, ' ')
-		set winhl=Normal:PMenu
 		nnoremap <buffer> <silent> <Esc> :q<CR>
 	catch
 		quit
@@ -129,7 +128,6 @@ call plug#begin('~/.plugins/neovim')
 	" General
 	Plug 'tpope/vim-fugitive'                             " Git usage integration
 	Plug 'tpope/vim-surround'                             " Surround with parentheses/HTML-tags etc.
-	Plug 'tpope/vim-commentary'                           " Commenting out code
 	Plug 'tpope/vim-vinegar'                              " Browsing files
 	Plug 'tpope/vim-repeat'                               " Use '.' with vim-surround
 	Plug 'nvim-lualine/lualine.nvim'                      " Better status line
@@ -144,7 +142,6 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'nvim-neotest/nvim-nio'                          " Requirement for nvim-dap-ui
 	Plug 'mfussenegger/nvim-dap'                          " Debug adapter protocol
 	Plug 'rcarriga/nvim-dap-ui'                           " Frontend for nvim-dap
-	Plug 'L3MON4D3/LuaSnip'                               " Snippets
 	Plug 'rmagatti/auto-session'                          " Remote persistence for neovim
 
 	" Language-specific
@@ -159,20 +156,18 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'hrsh7th/cmp-path'
 	Plug 'hrsh7th/cmp-cmdline'
 	Plug 'hrsh7th/nvim-cmp'
-	Plug 'saadparwaiz1/cmp_luasnip'
 call plug#end()
 
 lua << EOF
 	-- Completion
 	local cmp = require'cmp'
 	cmp.setup({
-		snippet = {expand = function(args) require('luasnip').lsp_expand(args.body) end},
 		mapping = cmp.mapping.preset.insert({
 			["<C-Space>"] = cmp.mapping.confirm(),
 			["<Tab>"] = cmp.mapping.select_next_item(),
 			["<S-Tab>"] = cmp.mapping.select_prev_item(),
 		}),
-		sources = cmp.config.sources({{name='nvim_lsp'}, {name='luasnip'}}, {{name='buffer'}}, {{name='path'}})
+		sources = cmp.config.sources({{name='nvim_lsp'}}, {{name='buffer'}}, {{name='path'}})
 	})
 
 	-- Use buffer source for `/` and `?` (Doesn't work on enabling `native_menu`).
@@ -188,43 +183,56 @@ lua << EOF
 	})
 
 	-- Set up lspconfig.
-	local function on_attach(client, buf)
-		local function map_to(key, cmd)
-			vim.keymap.set('n', key, cmd, {silent=true, buffer=buf})
-		end
-
-		map_to('K', vim.lsp.buf.hover)
-		map_to('gd', vim.lsp.buf.definition)
-		map_to('<Leader>r', vim.lsp.buf.rename)
-		if client.server_capabilities.documentFormattingProvider then
-			map_to('<Leader>f', vim.lsp.buf.format)
-		end
-		map_to('<Leader>u', vim.lsp.buf.references)
-		map_to('<Leader>a', vim.lsp.buf.code_action)
-		map_to('<Leader>D', vim.lsp.buf.type_definition)
-		map_to('[d', vim.diagnostic.goto_prev)
-		map_to(']d', vim.diagnostic.goto_next)
-	end
-
 	local lsp = require("lspconfig")
 	local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-	local function lsp_set(name, cmd, options)
-		lsp[name].setup({cmd=cmd, on_attach=on_attach, settings=options, capabilities=capabilities})
+	local function lsp_set(name, cmd)
+		lsp[name].setup(cmd and {cmd=cmd, capabilities=capabilities} or {capabilities=capabilities})
 	end
 
-	lsp_set('rust_analyzer', {'rustup', 'run', 'nightly', 'rust-analyzer'}, {})
-	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'}, {})
-	lsp_set('pyright', {"pyright-langserver", "--stdio"}, {})
+	lsp_set('rust_analyzer', {'rustup', 'run', 'nightly', 'rust-analyzer'})
+	lsp_set('clangd', {'clangd', '--clang-tidy', '--header-insertion=never'})
+	lsp_set('pyright')
+	lsp_set('lua_ls')
+
+	-- Keybindings and default changes on attaching LSP
+	vim.api.nvim_create_autocmd('LspAttach', {
+		callback = function(args)
+			local client = vim.lsp.get_client_by_id(args.data.client_id)
+			local function map_to(key, method, cmd)
+				if client.supports_method('textDocument/'..method) then
+					vim.keymap.set('n', '<Leader>'..key, cmd, {silent=true, buffer=args.buf})
+				end
+			end
+
+			map_to('f', 'formatting', vim.lsp.buf.format)
+			map_to('r', 'rename', vim.lsp.buf.rename)
+			map_to('u', 'references', vim.lsp.buf.references)
+			map_to('a', 'codeAction', vim.lsp.buf.code_action)
+			map_to('D', 'typeDefinition', vim.lsp.buf.type_definition)
+			map_to('ih', 'inlayHint', function()
+				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(), {bufnr=args.buf})
+			end)
+
+			if client.supports_method('textDocument/inlayHint') then
+				vim.lsp.inlay_hint.enable(true, {bufnr=args.buf})
+			end
+		end,
+	})
 
 	-- Disable displaying "HINT" diagnostics
 	vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
 	  vim.lsp.diagnostic.on_publish_diagnostics, {
-		virtual_text = {severity_limit = vim.diagnostic.severity.INFO},
-		signs = {severity_limit = vim.diagnostic.severity.INFO},
+		virtual_text = {min = vim.diagnostic.severity.INFO},
+		signs = {min = vim.diagnostic.severity.INFO},
 		underline = true,
 		update_in_insert = false,
 	  }
+	)
+
+	-- Show borders in hover and signature help
+	vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {border='single'})
+	vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
+		vim.lsp.handlers.signature_help, {border='single'}
 	)
 
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
@@ -275,7 +283,7 @@ lua << EOF
 			},
 			lsp_interop = {
 				enable = true,
-				border = "rounded",
+				border = "single",
 				peek_definition_code = {
 					["<leader>df"] = "@function.outer",
 					["<leader>dF"] = "@class.outer",
@@ -304,7 +312,7 @@ lua << EOF
 		pythonPath = function() return vim.fn.system("which python3"):sub(1, -2) end,
 	}}
 	
-		-- DAP Mappings
+	-- DAP Mappings
 	dapui = require("dapui")
 	dapui.setup()
 	dapmap = {
