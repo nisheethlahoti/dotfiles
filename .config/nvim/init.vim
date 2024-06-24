@@ -135,7 +135,6 @@ call plug#begin('~/.plugins/neovim')
 	Plug 'junegunn/fzf.vim'                               " Vim bindings for fzf
 	Plug 'nvim-lua/plenary.nvim'                          " Common functions for neovim
 	Plug 'lewis6991/gitsigns.nvim'                        " hunk object and signs for changed lines
-	Plug 'ray-x/lsp_signature.nvim'                       " Show function signature as you type
 	Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " Language syntax parsing
 	Plug 'nvim-treesitter/nvim-treesitter-textobjects'    " Text-objects based on treesitter
 	Plug 'jeetsukumaran/vim-indentwise'                   " Motions over indented blocks
@@ -208,6 +207,8 @@ lua << EOF
 				keymap('n', '<Leader><Leader>'..key, method, cmd)
 			end
 
+			keymap('i', '<C-x>', 'signatureHelp', vim.lsp.buf.signature_help)
+			map_to('h', 'signatureHelp', vim.lsp.buf.signature_help)
 			map_to('f', 'formatting', vim.lsp.buf.format)
 			map_to('r', 'rename', vim.lsp.buf.rename)
 			map_to('u', 'references', vim.lsp.buf.references)
@@ -233,15 +234,16 @@ lua << EOF
 	  }
 	)
 
-	-- Show borders in hover and signature help
+	-- Show borders in hover and signature help. Make signature help transient.
 	vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {border='single'})
-	vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
-		vim.lsp.handlers.signature_help, {border='single'}
-	)
+	vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+		border='single',
+		focus=false,
+		close_events={'CursorMoved', 'CursorMovedI', 'TextChangedI', 'TextChangedP', 'ModeChanged'}
+	})
 
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
-	require('lsp_signature').setup{toggle_key="<C-x>"}
 	require('lualine').setup{options={theme='nord'}}
 	require('gitsigns').setup{
 		on_attach=function(bufnr)
