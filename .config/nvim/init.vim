@@ -198,10 +198,14 @@ lua << EOF
 	vim.api.nvim_create_autocmd('LspAttach', {
 		callback = function(args)
 			local client = vim.lsp.get_client_by_id(args.data.client_id)
-			local function map_to(key, method, cmd)
+			local function keymap(mode, key, method, cmd)
 				if client.supports_method('textDocument/'..method) then
-					vim.keymap.set('n', '<Leader>'..key, cmd, {silent=true, buffer=args.buf})
+					vim.keymap.set(mode, key, cmd, {silent=true, buffer=args.buf})
 				end
+			end
+
+			local function map_to(key, method, cmd)
+				keymap('n', '<Leader><Leader>'..key, method, cmd)
 			end
 
 			map_to('f', 'formatting', vim.lsp.buf.format)
@@ -209,7 +213,7 @@ lua << EOF
 			map_to('u', 'references', vim.lsp.buf.references)
 			map_to('a', 'codeAction', vim.lsp.buf.code_action)
 			map_to('D', 'typeDefinition', vim.lsp.buf.type_definition)
-			map_to('ih', 'inlayHint', function()
+			map_to('i', 'inlayHint', function()
 				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(), {bufnr=args.buf})
 			end)
 
@@ -347,13 +351,13 @@ au FileType rust noremap <Leader>T :!cargo test<CR>
 au FileType rust noremap <Leader>C :!cargo clippy<CR>
 
 " Autoformat python (making sure that cursor doesn't jump either during the command or on undo)
-au FileType python noremap <Leader>f :let v=winsaveview() \| exe "normal i \<C-V><BS>" \| exe "%!isort - \| black -q -" \| call winrestview(v) <CR>
+au FileType python noremap <Leader><Leader>f :let v=winsaveview() \| exe "normal i \<C-V><BS>" \| exe "%!isort - \| black -q -" \| call winrestview(v) <CR>
 
 " Because default clang-format settings, as well as my zshrc, have 2 spaces
 au FileType c,cpp,zsh,yaml set ts=2 | set sw=2 | set expandtab
 
 " Autoformat json
-au FileType json noremap <Leader>f :%!json_pp<CR>
+au FileType json noremap <Leader><Leader>f :%!json_pp<CR>
 
 " Colorscheme
 " Colorscheme - Editor elements
