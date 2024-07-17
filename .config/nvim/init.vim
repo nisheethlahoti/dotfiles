@@ -17,6 +17,7 @@ set nofoldenable       " Folds off by default
 set foldmethod=expr    " Fold according to given expression (treesitter)
 set foldexpr=nvim_treesitter#foldexpr()
 set clipboard+=unnamedplus    " Uses clipboard by default for yank/delete/paste
+set display+=uhex
 
 let mapleader = " "
 if isdirectory($HOME.'/micromamba')
@@ -244,7 +245,7 @@ lua << EOF
 
 	-- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
 
-	require('lualine').setup{options={theme='nord'}}
+  require('lualine').setup{options={theme='nord'}, sections={lualine_y={'%B'}}}
 	require('gitsigns').setup{
 		on_attach=function(bufnr)
 			local expr_opts = {buffer=bufnr, silent=true, expr=true, replace_keycodes=false}
