@@ -434,7 +434,7 @@ alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries
 alias tempssh="ssh -o UserKnownHostsFile=/dev/null"
 alias ffprobe="ffprobe -hide_banner"
 
-export NVIMRC=~/.config/nvim/init.vim
+export NVIMRC=~/.config/nvim/init.lua
 export EDITOR=nvim
 export VISUAL=nvim
 export LANG=en_US.UTF-8
