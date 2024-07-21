@@ -177,12 +177,17 @@ end
 lsp_set('rust_analyzer', {cmd = {'rustup', 'run', 'nightly', 'rust-analyzer'}})
 lsp_set('clangd', {cmd = {'clangd', '--clang-tidy', '--header-insertion=never'}})
 lsp_set('pyright')
+lsp_set('ruff')
 lsp_set('lua_ls')
 
 -- Keybindings and default changes on attaching LSP
 autocmd('LspAttach', {
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
+
+    -- Server-specific: disable ruff's hover in favor of pyright
+    if client.name == 'ruff' then client.server_capabilities.hoverProvider = false end
+
     local function lspmap(mode, key, method, cmd)
       if client.supports_method('textDocument/'..method) then
         keymap(mode, key, cmd, {silent = true, buffer = args.buf})
@@ -191,9 +196,14 @@ autocmd('LspAttach', {
 
     local function map_to(key, method, cmd) lspmap('', '<Leader><Leader>'..key, method, cmd) end
 
+    map_to('f', 'formatting', function()
+      vim.lsp.buf.code_action {context = {only = {'source.fixAll'}}, apply = true}
+      vim.lsp.buf.code_action {context = {only = {'source.organizeImports'}}, apply = true}
+      vim.lsp.buf.format()
+    end)
+
     lspmap('i', '<C-x>', 'signatureHelp', vim.lsp.buf.signature_help)
     map_to('h', 'signatureHelp', vim.lsp.buf.signature_help)
-    map_to('f', 'formatting', vim.lsp.buf.format)
     map_to('r', 'rename', vim.lsp.buf.rename)
     map_to('u', 'references', vim.lsp.buf.references)
     map_to('a', 'codeAction', vim.lsp.buf.code_action)
@@ -335,14 +345,6 @@ autocmd('FileType', {
     end
   end,
 })
-
--- Autoformat python (making sure that cursor doesn't jump either during the command or on undo)
-autocmd('FileType',
-  {
-    pattern = 'python',
-    command =
-    'noremap <buffer> <Leader><Leader>f :let v=winsaveview() \\| exe "normal i \\<C-V><BS>" \\| exe "%!isort - \\| black -q -" \\| call winrestview(v) <CR>',
-  })
 
 -- Because default clang-format settings, as well as my zshrc, have 2 spaces
 autocmd('FileType', {
