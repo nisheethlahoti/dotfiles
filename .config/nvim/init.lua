@@ -75,8 +75,14 @@ local function FloatingExec(cmdtext)
       width = math.floor(0.8 * vim.o.columns),
       border = 'single',
     })
-    vim.cmd(cmdtext..' '..cmd.args)
-    keymap('n', '<Esc>', vim.cmd.q, {buffer = true, silent = true})
+
+    xpcall(function()
+      vim.api.nvim_exec2(cmdtext..' '..cmd.args, {})
+      keymap('n', '<Esc>', vim.cmd.q, {buffer = true, silent = true})
+    end, function(err)
+      vim.api.nvim_err_writeln(err)
+      vim.cmd.quit()
+    end)
   end
 end
 
