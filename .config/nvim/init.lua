@@ -225,13 +225,9 @@ autocmd('LspAttach', {
 })
 
 -- Disable displaying 'HINT' diagnostics
+local dfilter = {severity = {min = vim.diagnostic.severity.INFO}}
 vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
-  vim.lsp.diagnostic.on_publish_diagnostics, {
-    virtual_text = {min = vim.diagnostic.severity.INFO},
-    signs = {min = vim.diagnostic.severity.INFO},
-    underline = true,
-    update_in_insert = false,
-  }
+  vim.lsp.diagnostic.on_publish_diagnostics, {virtual_text = dfilter, signs = dfilter}
 )
 
 -- Show borders in hover and signature help. Make signature help transient.
