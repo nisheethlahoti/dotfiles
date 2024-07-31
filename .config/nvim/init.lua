@@ -248,14 +248,6 @@ require('gitsigns').setup {
     keymap('', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", expr_opts)
     keymap('', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", expr_opts)
 
-    -- Actions
-    keymap('n', '<leader>hs', '<cmd>Gitsigns stage_hunk<CR>', opts)
-    keymap('n', '<leader>hr', '<cmd>Gitsigns reset_hunk<CR>', opts)
-    keymap('n', '<leader>hu', '<cmd>Gitsigns undo_stage_hunk<CR>', opts)
-    keymap('n', '<leader>hp', '<cmd>Gitsigns preview_hunk<CR>', opts)
-    keymap('n', '<leader>tb', '<cmd>Gitsigns toggle_current_line_blame<CR>', opts)
-    keymap('n', '<leader>td', '<cmd>Gitsigns toggle_deleted<CR>', opts)
-
     -- Text object
     keymap('o', 'ih', ':<C-U>Gitsigns select_hunk<CR>', opts)
     keymap('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>', opts)
