@@ -358,6 +358,7 @@ autocmd('FileType',
 -- Colorscheme - Editor elements
 highlight(0, 'DiagnosticError', {ctermfg = 9, fg = '#ff8888'})
 highlight(0, 'DiagnosticHint', {ctermfg = 7, fg = 'NvimLightGrey3'})
+highlight(0, 'Changed', {ctermfg = 3, fg = 'NvimDarkYellow'}) -- For gitsigns
 
 -- Colorscheme - Diff
 highlight(0, 'DiffDelete', {ctermbg = 1, ctermfg = 0, bg = 'NvimDarkRed', fg = 'DarkRed'})
