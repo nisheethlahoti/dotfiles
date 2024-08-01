@@ -203,8 +203,24 @@ autocmd('LspAttach', {
     local function map_to(key, method, cmd) lspmap('', '<Leader><Leader>'..key, method, cmd) end
 
     map_to('f', 'formatting', function()
-      vim.lsp.buf.code_action {context = {only = {'source.fixAll'}}, apply = true}
-      vim.lsp.buf.code_action {context = {only = {'source.organizeImports'}}, apply = true}
+      -- TODO(neovim/neovim/24168): Replace below with 2 lines using vim.lsp.buf.code_action
+      for _, action in ipairs({'source.fixAll', 'source.organizeImports'}) do
+        local params = vim.lsp.util.make_range_params()
+        params.context = {only = {action}, diagnostics = {}}
+        local result = client.request_sync('textDocument/codeAction', params, 1000, args.buf)
+        for _, r in ipairs(result.result) do
+          if not (r.command or r.edit) then
+            r = client.request_sync('codeAction/resolve', r, 1000, args.buf).result
+          end
+          if r.edit then
+            vim.lsp.util.apply_workspace_edit(r.edit, client.offset_encoding)
+          elseif r.command then
+            local r_command = type(r.command) == 'table' and r.command or r
+            client.request_sync('workspace/executeCommand', r_command, 1000, args.buf)
+          end
+          vim.lsp._changetracking.flush(client, args.buf)
+        end
+      end
       vim.lsp.buf.format()
     end)
 
