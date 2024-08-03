@@ -310,6 +310,7 @@ dap.configurations.python = {{
   type = 'python', -- this links to the adapter definition: `dap.adapters.python`
   request = 'launch',
   name = 'Launch file',
+  justMyCode = false, -- Allow debugging inside libraries as well
   -- debugpy options, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings
   program = '${file}', -- This configuration will launch the current file if used.
   args = function()
