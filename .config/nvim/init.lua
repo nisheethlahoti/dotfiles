@@ -208,7 +208,7 @@ autocmd('LspAttach', {
         local params = vim.lsp.util.make_range_params()
         params.context = {only = {action}, diagnostics = {}}
         local result = client.request_sync('textDocument/codeAction', params, 1000, args.buf)
-        for _, r in ipairs(result.result) do
+        for _, r in ipairs(result.result or {}) do
           if not (r.command or r.edit) then
             r = client.request_sync('codeAction/resolve', r, 1000, args.buf).result
           end
@@ -310,7 +310,7 @@ dap.configurations.python = {{
   type = 'python', -- this links to the adapter definition: `dap.adapters.python`
   request = 'launch',
   name = 'Launch file',
-  justMyCode = false, -- Allow debugging inside libraries as well
+  justMyCode = false,  -- Allow debugging inside libraries as well
   -- debugpy options, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings
   program = '${file}', -- This configuration will launch the current file if used.
   args = function()
@@ -333,7 +333,7 @@ local dapmap = {
   b = dap.toggle_breakpoint,
   R = dap.repl.open,
   w = dapui.toggle,
-  l = function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+  l = dap.list_breakpoints, -- Populate quickfix list with breakpoints
   B = function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
   q = function()
     dap.terminate(); dapui.close()
