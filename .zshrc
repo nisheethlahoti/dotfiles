@@ -486,4 +486,5 @@ unset __mamba_setup
 micromamba activate base
 # <<< mamba initialize <<<
 
+eval "$(atuin init zsh --disable-up-arrow)"  # Initialize atuin history
 export VIDFLAGS=(-b:v 0 -crf 18 -profile:v high444 -preset veryfast -tune zerolatency -movflags +faststart)
