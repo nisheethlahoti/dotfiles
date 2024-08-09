@@ -27,6 +27,19 @@ vim.opt.clipboard:append('unnamedplus')      -- Use clipboard by default for yan
 vim.opt.display:append('uhex')               -- Show hex for unprintable characters
 vim.o.diffopt = vim.o.diffopt..',vertical,algorithm:histogram,indent-heuristic'
 
+-- Set clipboard to OSC52 in case of ssh (copy into clipboard from remote locations)
+if os.getenv('SSH_TTY') then
+  local function paste() return {vim.split(vim.fn.getreg(''), '\n'), vim.fn.getregtype('')} end
+  vim.g.clipboard = {
+    name = 'OSC 52',
+    copy = {
+      ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
+      ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+    },
+    paste = {['+'] = paste, ['*'] = paste},
+  }
+end
+
 vim.g.mapleader = ' '
 if vim.fn.isdirectory(os.getenv('HOME')..'/micromamba') then
   vim.g.python3_host_prog = os.getenv('HOME')..'/micromamba/bin/python'
