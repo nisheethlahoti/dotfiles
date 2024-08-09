@@ -147,7 +147,7 @@ Plug('jeetsukumaran/vim-indentwise')                            -- Motions over 
 Plug('nvim-neotest/nvim-nio')                                   -- Requirement for nvim-dap-ui
 Plug('mfussenegger/nvim-dap')                                   -- Debug adapter protocol
 Plug('rcarriga/nvim-dap-ui')                                    -- Frontend for nvim-dap
-Plug('rmagatti/auto-session')                                   -- Remote persistence for neovim
+if os.getenv('SSH_TTY') then Plug('rmagatti/auto-session') end  -- Remote persistence for neovim
 
 -- Language-specific
 Plug('simrat39/rust-tools.nvim')
@@ -358,7 +358,7 @@ local dapmap = {
 for key, val in pairs(dapmap) do keymap('', '<BS>'..key, val) end
 
 require('rust-tools').setup() -- Not used yet, figure out if better conf required
-require('auto-session').setup {log_level = 'error'}
+if os.getenv('SSH_TTY') then require('auto-session').setup {log_level = 'error'} end
 
 -- Rust running and compiling
 autocmd('FileType', {
