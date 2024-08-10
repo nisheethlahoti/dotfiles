@@ -382,9 +382,12 @@ autocmd('FileType',
 
 -- Colorscheme
 -- Colorscheme - Editor elements
+highlight(0, 'PMenu', {ctermbg = 8, bg = 'NvimDarkGrey3'})
+highlight(0, 'LineNr', {ctermfg = 8, fg = 'NvimDarkGrey4'})
 highlight(0, 'DiagnosticError', {ctermfg = 9, fg = '#ff8888'})
 highlight(0, 'DiagnosticHint', {ctermfg = 7, fg = 'NvimLightGrey3'})
 highlight(0, 'Changed', {ctermfg = 3, fg = 'NvimDarkYellow'}) -- For gitsigns
+highlight(0, 'CmpItemKind', {ctermfg = 10, fg = 'NvimLightGreen'}) -- For gitsigns
 
 -- Colorscheme - Diff
 highlight(0, 'DiffDelete', {ctermbg = 1, ctermfg = 0, bg = 'NvimDarkRed', fg = 'DarkRed'})
