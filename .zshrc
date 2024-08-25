@@ -37,7 +37,7 @@ function gitshow() {
 
 function update-all() {
   update-pkgs
-  nvim -c PlugUpdate - < /dev/null
+  nvim --headless "+Lazy! sync" +qa
 
   ! [ -f ~/.zsh_history.bak ] ||
 

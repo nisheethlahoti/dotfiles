@@ -4,6 +4,13 @@ local command = vim.api.nvim_create_user_command
 local keymap = vim.keymap.set
 local highlight = vim.api.nvim_set_hl
 
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath('data')..'/lazy/lazy.nvim'
+if not vim.loop.fs_stat(lazypath) then
+  vim.system {'git', 'clone', 'https://github.com/folke/lazy.nvim', '-b', 'stable', lazypath}
+end
+vim.opt.rtp:prepend(lazypath)
+
 -- Basics
 vim.o.breakindent = true                     -- Wrapped part of any line also appears indented
 vim.o.linebreak = true                       -- When wrapping text, break on word boundaries
@@ -50,6 +57,10 @@ for key in vim.iter({'h', 'j', 'k', 'l'}) do
   keymap('t', '<C-'..key..'>', '<C-\\><C-n><C-w>'..key) -- in terminal mode
   keymap('', '<C-'..key..'>', '<C-w>'..key)             -- in n/v/o modes
 end
+
+-- For tmux-like zooming
+keymap('', '<Leader>t', ':tab split<CR>')
+keymap('', '<Leader>T', ':tabclose<CR>')
 
 -- Replacing shortcuts, plus use very-magic for regexes
 keymap('', '/', '/\\v')
@@ -116,88 +127,197 @@ end)
 local wrap_ft = {'text', 'markdown'}
 autocmd('FileType', {callback = function(e) vim.wo.wrap = vim.list_contains(wrap_ft, e.match) end})
 
--- For netrw (and hence vinegar)
-vim.g.netrw_bufsettings = 'nomodifiable nomodified readonly nobuflisted nowrap number'
-autocmd('FileType', {pattern = 'netrw', callback = function(_) vim.bo.bufhidden = 'delete' end})
+-- Setup plugins
+require('lazy').setup {
+  -- Editing motions
+  'tpope/vim-surround',           -- Surround with parentheses/HTML-tags etc.
+  'tpope/vim-repeat',             -- Use '.' with several plugins
+  'jeetsukumaran/vim-indentwise', -- Motions over indented blocks
 
--- For fzf plugin (\o for opening file and \g for searching through files)
--- TODO: Explore telescope
-keymap('', '<Leader>o', ':Files<CR>')
-keymap('', '<Leader>l', ':Rg<CR>')
-keymap('', '<Leader>h', ':History:<CR>')
-vim.g.fzf_layout = {window = {width = 0.8, height = 0.8, relative = 'editor'}}
+  -- General
+  'tpope/vim-vinegar',           -- Browsing files
+  {
+    'nvim-lualine/lualine.nvim', -- Better status line
+    opts = {options = {theme = 'nord'}, sections = {lualine_y = {'%B'}}},
+  },
+  {
+    'junegunn/fzf.vim', -- Vim bindings for fzf
+    dependencies = {{'junegunn/fzf', build = './install --all'}},
+    config = function()
+      vim.g.fzf_layout = {window = {width = 0.8, height = 0.8, relative = 'editor'}}
+      keymap('', '<Leader>o', ':Files<CR>')
+      keymap('', '<Leader>l', ':Rg<CR>')
+      keymap('', '<Leader>h', ':History:<CR>')
+    end,
+  },
+  'tpope/vim-fugitive',        -- Git usage integration
+  {
+    'lewis6991/gitsigns.nvim', -- hunk object and signs for changed lines
+    opts = {
+      on_attach = function(bufnr)
+        local opts = {buffer = bufnr, silent = true}
+        local gitsigns = require('gitsigns')
+        keymap({'o', 'x'}, 'ih', gitsigns.select_hunk, opts)  -- Text object
 
--- Plugins
--- TODO: Switch to packer
-vim.call('plug#begin', vim.env.HOME..'/.plugins/neovim')
-local Plug = vim.fn['plug#']
--- General
-Plug('tpope/vim-fugitive')                                      -- Git usage integration
-Plug('tpope/vim-surround')                                      -- Surround with parentheses/HTML-tags etc.
-Plug('tpope/vim-vinegar')                                       -- Browsing files
-Plug('tpope/vim-repeat')                                        -- Use '.' with vim-surround
-Plug('nvim-lualine/lualine.nvim')                               -- Better status line
-Plug('junegunn/fzf', {['do'] = './install --all'})              -- Fuzzy finder
-Plug('junegunn/fzf.vim')                                        -- Vim bindings for fzf
-Plug('nvim-lua/plenary.nvim')                                   -- Common functions for neovim
-Plug('lewis6991/gitsigns.nvim')                                 -- hunk object and signs for changed lines
-Plug('nvim-treesitter/nvim-treesitter', {['do'] = ':TSUpdate'}) -- Language syntax parsing
-Plug('nvim-treesitter/nvim-treesitter-textobjects')             -- Text-objects based on treesitter
-Plug('jeetsukumaran/vim-indentwise')                            -- Motions over indented blocks
-Plug('nvim-neotest/nvim-nio')                                   -- Requirement for nvim-dap-ui
-Plug('mfussenegger/nvim-dap')                                   -- Debug adapter protocol
-Plug('rcarriga/nvim-dap-ui')                                    -- Frontend for nvim-dap
-if os.getenv('SSH_TTY') then Plug('rmagatti/auto-session') end  -- Remote persistence for neovim
+        for dest, key in pairs({next = ']c', prev = '[c'}) do -- Navigation
+          keymap('', key, function()
+            if vim.wo.diff then vim.cmd.normal({key, bang = true}) else gitsigns.nav_hunk(dest) end
+          end, opts)
+        end
+      end,
+    },
+  },
+  {
+    'rmagatti/auto-session',               -- Remote persistence for neovim
+    enabled = os.getenv('SSH_TTY') ~= nil, -- Only use in SSH environments
+    opts = {log_level = 'error'},
+  },
+  {
+    'hrsh7th/nvim-cmp', -- Autocomplete
+    dependencies = {'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path'},
+    opts = function()
+      local cmp = require('cmp')
+      return {
+        mapping = cmp.mapping.preset.insert({
+          ['<C-Space>'] = cmp.mapping.confirm(),
+          ['<Tab>'] = cmp.mapping.select_next_item(),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+        }),
+        sources = cmp.config.sources({{name = 'nvim_lsp'}}, {{name = 'buffer'}}, {{name = 'path'}}),
+      }
+    end,
+  },
+  {
+    'hrsh7th/cmp-cmdline', -- Autocomplete for command line
+    dependencies = {'hrsh7th/nvim-cmp', 'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path'},
+    config = function()
+      local cmp = require('cmp')
 
--- Language-specific
-Plug('simrat39/rust-tools.nvim')
-Plug('vlaadbrain/gnuplot.vim')
-Plug('iamcco/markdown-preview.nvim', {['do'] = 'cd app && npx --yes yarn install'})
+      cmp.setup.cmdline({'/', '?'}, {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {{name = 'buffer'}},
+      })
 
--- Autocomplete
-Plug('neovim/nvim-lspconfig')
-Plug('hrsh7th/cmp-nvim-lsp')
-Plug('hrsh7th/cmp-buffer')
-Plug('hrsh7th/cmp-path')
-Plug('hrsh7th/cmp-cmdline')
-Plug('hrsh7th/nvim-cmp')
-vim.call('plug#end')
+      cmp.setup.cmdline(':', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = cmp.config.sources({{name = 'path'}}, {{name = 'cmdline'}}),
+      })
+    end,
+  },
 
--- Completion
-local cmp = require 'cmp'
-cmp.setup({
-  mapping = cmp.mapping.preset.insert({
-    ['<C-Space>'] = cmp.mapping.confirm(),
-    ['<Tab>'] = cmp.mapping.select_next_item(),
-    ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-  }),
-  sources = cmp.config.sources({{name = 'nvim_lsp'}}, {{name = 'buffer'}}, {{name = 'path'}}),
-})
-
--- Use buffer source for `/` and `?` (Doesn't work on enabling `native_menu`).
-cmp.setup.cmdline({'/', '?'}, {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = {{name = 'buffer'}},
-})
-
--- Use cmdline & path source for ':' (Doesn't work on enabling `native_menu`).
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({{name = 'path'}}, {{name = 'cmdline'}}),
-})
-
--- Set up lspconfig.
-local lsp = require('lspconfig')
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
-local function lsp_set(name, settings)
-  lsp[name].setup(vim.tbl_deep_extend('keep', settings or {}, {capabilities = capabilities}))
-end
-
-lsp_set('rust_analyzer', {cmd = {'rustup', 'run', 'nightly', 'rust-analyzer'}})
-lsp_set('clangd', {cmd = {'clangd', '--clang-tidy', '--header-insertion=never'}})
-lsp_set('pyright')
-lsp_set('ruff')
-lsp_set('lua_ls')
+  -- Language awareness
+  {
+    'nvim-treesitter/nvim-treesitter', -- Language syntax parsing
+    build = ':TSUpdate',
+    main = 'nvim-treesitter.configs',
+    opts = {
+      ensure_installed = {'bash', 'cpp', 'lua', 'python', 'rust', 'vim', 'vimdoc'},
+      auto_install = true, -- On entering new buffer, install its parser if available
+      highlight = {enable = true, additional_vim_regex_highlighting = false},
+      incremental_selection = {
+        enable = true,
+        keymaps = {node_incremental = '/', node_decremental = '?'},
+      },
+    },
+  },
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects', -- Text-objects based on treesitter
+    dependencies = {'nvim-treesitter/nvim-treesitter'},
+    main = 'nvim-treesitter.configs',
+    opts = function(_, opts)
+      opts.textobjects = {
+        select = {
+          enable = true,
+          keymaps = {
+            af = '@function.outer',
+            ['if'] = '@function.inner',
+            ac = '@class.outer',
+            ic = '@class.inner',
+            ab = '@block.outer',
+            ib = '@block.inner',
+            au = '@call.outer',
+            iu = '@call.inner',
+          },
+        },
+        lsp_interop = {
+          enable = true,
+          border = 'single',
+          peek_definition_code = {
+            ['<Leader>df'] = '@function.outer', ['<Leader>dF'] = '@class.outer',
+          },
+        },
+      }
+    end,
+  },
+  {
+    'mfussenegger/nvim-dap', -- Debug adapter protocol
+    config = function()
+      local dap = require('dap')
+      dap.adapters.python = {
+        type = 'executable',
+        command = vim.g.python3_host_prog,
+        args = {'-m', 'debugpy.adapter'},
+      }
+      dap.configurations.python = {{
+        -- nvim-dap options
+        type = 'python', -- this links to the adapter definition: `dap.adapters.python`
+        request = 'launch',
+        name = 'Launch file',
+        justMyCode = false,  -- Allow debugging inside libraries as well
+        -- debugpy options, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings
+        program = '${file}', -- This configuration will launch the current file if used.
+        args = function()
+          local infile = vim.fn.input('Arguments file: ')
+          return infile == '' and {} or vim.fn.readfile(infile)
+        end,
+        pythonPath = function() return vim.fn.system('which python3'):sub(1, -2) end,
+      }}
+      local dapmap = {
+        c = dap.continue,
+        n = dap.step_over,
+        s = dap.step_into,
+        r = dap.step_out,
+        b = dap.toggle_breakpoint,
+        R = dap.repl.open,
+        l = dap.list_breakpoints, -- Populate quickfix list with breakpoints
+        B = function() vim.ui.input('Breakpoint condition: ', dap.set_breakpoint) end,
+        q = dap.terminate,
+      }
+      for key, val in pairs(dapmap) do keymap('', '<BS>'..key, val) end
+    end,
+  },
+  {
+    'rcarriga/nvim-dap-ui', -- Frontend for nvim-dap
+    dependencies = {'mfussenegger/nvim-dap', 'nvim-neotest/nvim-nio'},
+    config = function()
+      local dap = require('dap')
+      local dapui = require('dapui')
+      dapui.setup()
+      keymap('', '<BS>w', dapui.toggle)
+      dap.listeners.before.attach.dapui_config = dapui.open
+      dap.listeners.before.launch.dapui_config = dapui.open
+      dap.listeners.before.event_terminated.dapui_config = dapui.close
+    end,
+  },
+  {
+    'neovim/nvim-lspconfig',
+    dependencies = {'hrsh7th/cmp-nvim-lsp'},
+    config = function()
+      local lspc = require('lspconfig')
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
+      local function lsp_set(name, settings)
+        lspc[name].setup(vim.tbl_deep_extend('keep', settings or {}, {capabilities = capabilities}))
+      end
+      lsp_set('rust_analyzer', {cmd = {'rustup', 'run', 'nightly', 'rust-analyzer'}})
+      lsp_set('clangd', {cmd = {'clangd', '--clang-tidy', '--header-insertion=never'}})
+      lsp_set('pyright')
+      lsp_set('ruff')
+      lsp_set('lua_ls')
+      lsp_set('jsonls')
+    end,
+    -- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
+  },
+}
 
 -- Keybindings and default changes on attaching LSP
 autocmd('LspAttach', {
@@ -267,126 +387,20 @@ vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.s
   close_events = {'CursorMoved', 'CursorMovedI', 'TextChangedI', 'TextChangedP', 'ModeChanged'},
 })
 
--- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
-
-require('lualine').setup {options = {theme = 'nord'}, sections = {lualine_y = {'%B'}}}
-require('gitsigns').setup {
-  on_attach = function(bufnr)
-    local expr_opts = {buffer = bufnr, silent = true, expr = true, replace_keycodes = false}
-    local opts = {buffer = bufnr, silent = true}
-
-    -- Navigation
-    keymap('', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", expr_opts)
-    keymap('', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", expr_opts)
-
-    -- Text object
-    keymap('o', 'ih', ':<C-U>Gitsigns select_hunk<CR>', opts)
-    keymap('x', 'ih', ':<C-U>Gitsigns select_hunk<CR>', opts)
-  end,
-}
-
-require('nvim-treesitter.configs').setup {
-  ensure_installed = {'bash', 'cpp', 'comment', 'lua', 'python', 'rust', 'vim', 'vimdoc'},
-  auto_install = true, -- On entering new buffer, install its parser if available
-  highlight = {enable = true, additional_vim_regex_highlighting = false},
-  incremental_selection = {
-    enable = true,
-    keymaps = {node_incremental = '/', node_decremental = '?'},
-  },
-  textobjects = {
-    select = {
-      enable = true,
-      lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-      keymaps = {
-        ['af'] = '@function.outer', ['if'] = '@function.inner',
-        ['ac'] = '@class.outer', ['ic'] = '@class.inner',
-        ['ab'] = '@block.outer', ['ib'] = '@block.inner',
-        ['au'] = '@call.outer', ['iu'] = '@call.inner',
-      },
-    },
-    lsp_interop = {
-      enable = true,
-      border = 'single',
-      peek_definition_code = {['<leader>df'] = '@function.outer', ['<leader>dF'] = '@class.outer'},
-    },
-  },
-}
-
-local dap = require('dap')
-dap.adapters.python = {
-  type = 'executable',
-  command = vim.g.python3_host_prog,
-  args = {'-m', 'debugpy.adapter'},
-}
-dap.configurations.python = {{
-  -- nvim-dap options
-  type = 'python', -- this links to the adapter definition: `dap.adapters.python`
-  request = 'launch',
-  name = 'Launch file',
-  justMyCode = false,  -- Allow debugging inside libraries as well
-  -- debugpy options, see https://github.com/microsoft/debugpy/wiki/Debug-configuration-settings
-  program = '${file}', -- This configuration will launch the current file if used.
-  args = function()
-    local infile = vim.fn.input('Arguments file: ')
-    return infile == '' and {} or vim.fn.readfile(infile)
-  end,
-  pythonPath = function() return vim.fn.system('which python3'):sub(1, -2) end,
-}}
-
--- DAP Mappings
-local dapui = require('dapui')
-dapui.setup()
-local dapmap = {
-  c = function()
-    dap.continue(); dapui.open()
-  end,
-  n = dap.step_over,
-  s = dap.step_into,
-  r = dap.step_out,
-  b = dap.toggle_breakpoint,
-  R = dap.repl.open,
-  w = dapui.toggle,
-  l = dap.list_breakpoints, -- Populate quickfix list with breakpoints
-  B = function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
-  q = function()
-    dap.terminate(); dapui.close()
-  end,
-  -- For tmux-like zooming
-  t = ':tab split<CR>',
-  T = ':tabclose<CR>',
-}
-for key, val in pairs(dapmap) do keymap('', '<BS>'..key, val) end
-
-require('rust-tools').setup() -- Not used yet, figure out if better conf required
-if os.getenv('SSH_TTY') then require('auto-session').setup {log_level = 'error'} end
-
--- Rust running and compiling
-autocmd('FileType', {
-  pattern = 'rust',
-  callback = function(_)
-    for key, cmd in pairs({R = 'run', T = 'test', C = 'clippy'}) do
-      keymap('', '<Leader>'..key, function() os.execute('cargo '..cmd) end, {buffer = true})
-    end
-  end,
-})
-
 -- Because default clang-format settings, as well as my zshrc, have 2 spaces
 autocmd('FileType', {
   pattern = {'c', 'cpp', 'lua', 'zsh', 'yaml'},
   callback = function(_) vim.bo.ts, vim.bo.sw, vim.bo.expandtab = 2, 2, true end,
 })
 
--- Autoformat json
-autocmd('FileType',
-  {pattern = 'json', command = 'noremap <buffer> <Leader><Leader>f :%!json_pp<CR>'})
-
 -- Colorscheme
 -- Colorscheme - Editor elements
 highlight(0, 'PMenu', {ctermbg = 8, bg = 'NvimDarkGrey3'})
 highlight(0, 'LineNr', {ctermfg = 8, fg = 'NvimDarkGrey4'})
+highlight(0, 'Visual', {cterm = {reverse = true}, bg = 'NvimDarkGrey4'})
 highlight(0, 'DiagnosticError', {ctermfg = 9, fg = '#ff8888'})
 highlight(0, 'DiagnosticHint', {ctermfg = 7, fg = 'NvimLightGrey3'})
-highlight(0, 'Changed', {ctermfg = 3, fg = 'NvimDarkYellow'}) -- For gitsigns
+highlight(0, 'Changed', {ctermfg = 3, fg = 'NvimDarkYellow'})      -- For gitsigns
 highlight(0, 'CmpItemKind', {ctermfg = 10, fg = 'NvimLightGreen'}) -- For gitsigns
 
 -- Colorscheme - Diff
