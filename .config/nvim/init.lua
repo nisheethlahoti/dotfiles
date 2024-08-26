@@ -50,6 +50,10 @@ if vim.fn.isdirectory(os.getenv('HOME')..'/micromamba') then
   vim.g.python3_host_prog = os.getenv('HOME')..'/micromamba/bin/python'
 end
 
+-- Difference from original file
+command('DiffOrig',
+  'vnew | set buftype=nofile | read ++edit # | 0d_ | diffthis | wincmd p | diffthis', {})
+
 -- Moving between windows
 for key in vim.iter({'h', 'j', 'k', 'l'}) do
   keymap('t', '<C-'..key..'>', '<C-\\><C-n><C-w>'..key) -- in terminal mode
@@ -426,7 +430,7 @@ autocmd('LspAttach', {
         local params = vim.lsp.util.make_range_params()
         params.context = {only = {action}, diagnostics = {}}
         local result = client.request_sync('textDocument/codeAction', params, 1000, args.buf)
-        for _, r in ipairs(result.result or {}) do
+        for _, r in ipairs((result or {}).result or {}) do
           if not (r.command or r.edit) then
             r = client.request_sync('codeAction/resolve', r, 1000, args.buf).result
           end
