@@ -37,12 +37,10 @@ vim.o.diffopt = vim.o.diffopt..',vertical,algorithm:histogram,indent-heuristic'
 -- Set clipboard to OSC52 in case of ssh (copy into clipboard from remote locations)
 if os.getenv('SSH_TTY') then
   local function paste() return {vim.split(vim.fn.getreg(''), '\n'), vim.fn.getregtype('')} end
+  local osc52 = require('vim.ui.clipboard.osc52')
   vim.g.clipboard = {
     name = 'OSC 52',
-    copy = {
-      ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
-      ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
-    },
+    copy = {['+'] = osc52.copy('+'), ['*'] = osc52.copy('*')},
     paste = {['+'] = paste, ['*'] = paste},
   }
 end
@@ -130,24 +128,32 @@ autocmd('FileType', {callback = function(e) vim.wo.wrap = vim.list_contains(wrap
 -- Setup plugins
 require('lazy').setup {
   -- Editing motions
-  'tpope/vim-surround',           -- Surround with parentheses/HTML-tags etc.
-  'tpope/vim-repeat',             -- Use '.' with several plugins
-  'jeetsukumaran/vim-indentwise', -- Motions over indented blocks
+  'tpope/vim-surround',              -- Surround with parentheses/HTML-tags etc.
+  'tpope/vim-repeat',                -- Use '.' with several plugins
+  'jeetsukumaran/vim-indentwise',    -- Motions over indented blocks
+  'michaeljsmith/vim-indent-object', -- Indent textobjects
+  {
+    'ggandor/flit.nvim',             -- Better f/F/t/T
+    dependencies = {'ggandor/leap.nvim'},
+    opts = {labeled_modes = 'nx'},
+  },
 
   -- General
   'tpope/vim-vinegar',           -- Browsing files
   {
     'nvim-lualine/lualine.nvim', -- Better status line
-    opts = {options = {theme = 'nord'}, sections = {lualine_y = {'%B'}}},
+    dependencies = {'nvim-tree/nvim-web-devicons'},
+    opts = {options = {theme = 'nord'}},
   },
+  {'stevearc/dressing.nvim', opts = {}}, -- Better UI for input and select
   {
-    'junegunn/fzf.vim', -- Vim bindings for fzf
-    dependencies = {{'junegunn/fzf', build = './install --all'}},
+    'ibhagwan/fzf-lua',                  -- Vim bindings for fzf
+    dependencies = {'nvim-tree/nvim-web-devicons', {'junegunn/fzf', build = './install --all'}},
     config = function()
-      vim.g.fzf_layout = {window = {width = 0.8, height = 0.8, relative = 'editor'}}
-      keymap('', '<Leader>o', ':Files<CR>')
-      keymap('', '<Leader>l', ':Rg<CR>')
-      keymap('', '<Leader>h', ':History:<CR>')
+      local fzf = require('fzf-lua')
+      keymap('', '<Leader>o', fzf.files)
+      keymap('', '<Leader>l', fzf.live_grep)
+      keymap('', '<Leader>h', fzf.command_history)
     end,
   },
   'tpope/vim-fugitive',        -- Git usage integration
@@ -179,7 +185,7 @@ require('lazy').setup {
       local cmp = require('cmp')
       return {
         mapping = cmp.mapping.preset.insert({
-          ['<C-Space>'] = cmp.mapping.confirm(),
+          ['<C-CR>'] = cmp.mapping.confirm(),
           ['<Tab>'] = cmp.mapping.select_next_item(),
           ['<S-Tab>'] = cmp.mapping.select_prev_item(),
         }),
@@ -204,6 +210,16 @@ require('lazy').setup {
       })
     end,
   },
+  {
+    'folke/which-key.nvim', -- Keymap helper
+    event = 'VeryLazy',
+    opts = {},
+    keys = {{
+      '<leader>?',
+      function() require('which-key').show {global = false} end,
+      desc = 'Buffer Local Keymaps (which-key)',
+    }},
+  },
 
   -- Language awareness
   {
@@ -225,27 +241,18 @@ require('lazy').setup {
     dependencies = {'nvim-treesitter/nvim-treesitter'},
     main = 'nvim-treesitter.configs',
     opts = function(_, opts)
+      local maps = {a = 'parameter', f = 'function', c = 'class'}
+      local select_maps, swap_next_maps, swap_prev_maps = {}, {}, {}
+      for k, v in pairs(maps) do
+        select_maps['a'..k] = '@'..v..'.outer'
+        select_maps['i'..k] = '@'..v..'.inner'
+        swap_next_maps['<Leader>]'..k] = '@'..v..'.outer'
+        swap_prev_maps['<Leader>['..k] = '@'..v..'.outer'
+      end
+
       opts.textobjects = {
-        select = {
-          enable = true,
-          keymaps = {
-            af = '@function.outer',
-            ['if'] = '@function.inner',
-            ac = '@class.outer',
-            ic = '@class.inner',
-            ab = '@block.outer',
-            ib = '@block.inner',
-            au = '@call.outer',
-            iu = '@call.inner',
-          },
-        },
-        lsp_interop = {
-          enable = true,
-          border = 'single',
-          peek_definition_code = {
-            ['<Leader>df'] = '@function.outer', ['<Leader>dF'] = '@class.outer',
-          },
-        },
+        select = {enable = true, keymaps = select_maps},
+        swap = {enable = true, swap_next = swap_next_maps, swap_previous = swap_prev_maps},
       }
     end,
   },
@@ -317,6 +324,84 @@ require('lazy').setup {
     end,
     -- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
   },
+  {
+    'stevearc/aerial.nvim', -- Code outline window
+    dependencies = {'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons'},
+    -- Mapping to <Leader>b because b for browse
+    opts = {on_attach = function() keymap('', '<Leader>b', require('aerial').toggle) end},
+  },
+
+  -- AI
+  {
+    'github/copilot.vim', -- Github copilot support
+    config = function()
+      vim.g.copilot_no_tab_map = true
+      keymap('i', '<C-space>', 'copilot#Accept("")', {expr = true, replace_keycodes = false})
+      keymap('i', '<C-right>', '<Plug>(copilot-accept-word)')
+      keymap('i', '<C-up>', '<Plug>(copilot-previous)')
+      keymap('i', '<C-down>', '<Plug>(copilot-next)')
+    end,
+  },
+  {
+    'robitx/gp.nvim', -- LLM Chat
+    config = function()
+      local gp = require('gp')
+      local disable_agents = {} -- Disable non-best agents of providers
+      for _, v in ipairs({'Claude-3-Haiku', 'GPT4o-mini'}) do
+        table.insert(disable_agents, {name = 'Chat'..v, disable = true})
+        table.insert(disable_agents, {name = 'Code'..v, disable = true})
+      end
+
+      gp.setup({
+        providers = {
+          anthropic = {disable = false},
+          openai = {disable = true},
+          copilot = {
+            disable = false,
+            secret = vim.tbl_values(
+              vim.json.decode(vim.fn.readfile(vim.env.HOME..'/.config/github-copilot/apps.json')[1])
+            )[1]['oauth_token'],
+          },
+        },
+        agents = disable_agents,
+      })
+
+      -- Chat commands
+      vim.keymap.set('', '<Leader>aa', ':GpChatToggle vsplit<cr>', {desc = 'Toggle chat'})
+      vim.keymap.set('', '<Leader>aA', ':GpChatNew vsplit<cr>', {desc = 'New chat'})
+      vim.keymap.set('', '<Leader>af', ':GpChatFinder<cr>', {desc = 'Find chat'})
+      vim.keymap.set('x', '<Leader>ap', ':GpChatPaste<cr>', {desc = 'Paste in chat'})
+
+      -- Credit: https://github.com/Robitx/gp.nvim/issues/191#issuecomment-2271698759
+      function _G.gp_diff(line1, line2)
+        vim.ui.input(gp.get_command_agent().cmd_prefix, function(prompt)
+          if prompt == nil or prompt == '' then return end
+          local contents = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), 0, -1, false)
+          vim.cmd('vnew | set buftype=nofile | set bufhidden=wipe')
+          vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, false, contents)
+          vim.cmd(line1..','..line2..'GpRewrite '..prompt)
+          vim.defer_fn(function() vim.cmd('diffthis | wincmd p | diffthis') end, 1000)
+        end)
+      end
+
+      -- Prompt commands
+      vim.cmd('command! -range GpDiff lua gp_diff(<line1>, <line2>)')
+      vim.keymap.set('x', '<Leader>aw', ':GpDiff<CR>', {desc = 'Copilot rewrite'})
+      vim.keymap.set('x', '<Leader>ai', ':GpImplement<cr>', {desc = 'Implement selected text'})
+
+      -- Generic commands
+      vim.keymap.set('', '<Leader>ac', ':GpContext vsplit<cr>', {desc = 'Open project context'})
+      vim.keymap.set('', '<Leader>ax', '<cmd>GpStop<cr>', {desc = 'Stop agent'})
+      vim.keymap.set('', '<Leader>an', '<cmd>GpNextAgent<cr>', {desc = 'Next agent'})
+    end,
+  },
+
+  -- Language specific
+  {
+    'MeanderingProgrammer/render-markdown.nvim',
+    opts = {},
+    dependencies = {'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons'},
+  },
 }
 
 -- Keybindings and default changes on attaching LSP
@@ -369,6 +454,14 @@ autocmd('LspAttach', {
 
     if client.supports_method('textDocument/inlayHint') then
       vim.lsp.inlay_hint.enable(true, {bufnr = args.buf})
+    end
+
+    if client.supports_method('textDocument/codeLens') then
+      vim.lsp.codelens.refresh()
+      vim.api.nvim_create_autocmd(
+        {'BufEnter', 'CursorHold', 'InsertLeave'},
+        {buffer = args.buf, callback = vim.lsp.codelens.refresh}
+      )
     end
   end,
 })
