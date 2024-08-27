@@ -8,3 +8,14 @@
 	cmd = nvim -d $LOCAL $REMOTE
 [alias]
 	get = fetch -p --recurse-submodules
+[init]
+	defaultBranch = master
+[fetch]
+	prune = true
+[diff]
+	algorithm = histogram
+	colorMoved = dimmed-zebra
+[rebase]
+	autoStash = true
+[pull]
+	ff = only
