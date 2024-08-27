@@ -56,29 +56,30 @@ command('DiffOrig',
 
 -- Moving between windows
 for key in vim.iter({'h', 'j', 'k', 'l'}) do
-  keymap('t', '<C-'..key..'>', '<C-\\><C-n><C-w>'..key) -- in terminal mode
-  keymap('', '<C-'..key..'>', '<C-w>'..key)             -- in n/v/o modes
+  keymap('t', '<C-'..key..'>', '<C-\\><C-n><C-w>'..key, {desc = 'Move in direction '..key})
+  keymap('', '<C-'..key..'>', '<C-w>'..key, {desc = 'Move in direction '..key})
 end
 
 -- For tmux-like zooming
-keymap('', '<Leader>t', ':tab split<CR>')
-keymap('', '<Leader>T', ':tabclose<CR>')
+keymap('', '<Leader>t', ':tab split<CR>', {desc = 'Make new tab with just this window'})
+keymap('', '<Leader>T', ':tabclose<CR>', {desc = 'Close tab'})
 
 -- Replacing shortcuts, plus use very-magic for regexes
 keymap('', '/', '/\\v')
 keymap('', '?', '?\\v')
-keymap('', '<Leader>s', ':s/\\v')
-keymap('', '<Leader>S', ':%s/\\v')
+keymap('', '<Leader>s', ':s/\\v', {desc = 'Substitution with very-magic'})
+keymap('', '<Leader>S', ':%s/\\v', {desc = 'Whole file substitution with very-magic'})
 
 -- For clearing out last search highlight
-keymap('n', '<Esc>', vim.cmd.noh, {silent = true})
+keymap('n', '<Esc>', vim.cmd.noh, {silent = true, desc = 'Clear highlighting from last search'})
 
 -- Commands to change directory to current file's and back to global
-keymap('n', '<Leader>cd', ':lcd %:p:h | pwd<CR>', {silent = true})
-keymap('n', '<Leader>cD', ':exe "lcd" getcwd(-1, -1) | pwd<CR>', {silent = true})
+keymap('n', '<Leader>cd', ':lcd %:p:h | pwd<CR>', {desc = 'Change directory to file'})
+keymap('n', '<Leader>cD', ':exe "lcd" getcwd(-1, -1) | pwd<CR>',
+  {desc = 'Change directory to global'})
 
 -- Delete buffer without destroying window layout
-command('Bdelete', 'bp | bd<bang>#', {bang = true})
+command('Bdelete', 'bp | bd<bang>#', {bang = true, desc = 'Delete buffer preserving window layout'})
 
 -- Commands to do the intended thing on overly common typos
 command('W', 'w', {})
@@ -88,7 +89,7 @@ command('Qa', 'qa<bang>', {bang = true})
 
 -- Commands for editing, help, and terminal in new vertical window
 command('E', 'vert new <args>', {nargs = '?', complete = 'file'})
-command('Term', 'vsplit | term', {})
+command('Term', 'vsplit | term', {desc = 'Open terminal in vertical split window'})
 
 -- Help and man in floating windows (supporting keywordprg)
 local function FloatingExec(cmdtext)
@@ -104,7 +105,7 @@ local function FloatingExec(cmdtext)
 
     xpcall(function()
       vim.api.nvim_exec2(cmdtext..' '..cmd.args, {})
-      keymap('n', '<Esc>', vim.cmd.q, {buffer = true, silent = true})
+      keymap('n', '<Esc>', vim.cmd.q, {buffer = true, silent = true, desc = 'Close popup'})
     end, function(err)
       vim.api.nvim_err_writeln(err)
       vim.cmd.quit()
@@ -123,7 +124,7 @@ autocmd('BufEnter', {
 keymap('', '<Leader>x', function()
   vim.bo.binary = not vim.bo.binary
   vim.cmd('%!xxd'..(vim.bo.binary and ' -r' or ''))
-end)
+end, {desc = 'Toggle binary/hex view'})
 
 -- Set wrap only for certain file types
 local wrap_ft = {'text', 'markdown'}
@@ -155,9 +156,9 @@ require('lazy').setup {
     dependencies = {'nvim-tree/nvim-web-devicons', {'junegunn/fzf', build = './install --all'}},
     config = function()
       local fzf = require('fzf-lua')
-      keymap('', '<Leader>o', fzf.files)
-      keymap('', '<Leader>l', fzf.live_grep)
-      keymap('', '<Leader>h', fzf.command_history)
+      keymap('', '<Leader>o', fzf.files, {desc = 'Fuzzy find files'})
+      keymap('', '<Leader>l', fzf.live_grep, {desc = 'Live grep'})
+      keymap('', '<Leader>h', fzf.command_history, {desc = 'Show command history'})
     end,
   },
   'tpope/vim-fugitive',        -- Git usage integration
@@ -165,14 +166,16 @@ require('lazy').setup {
     'lewis6991/gitsigns.nvim', -- hunk object and signs for changed lines
     opts = {
       on_attach = function(bufnr)
-        local opts = {buffer = bufnr, silent = true}
+        local function get_opts(desc)
+          return {buffer = bufnr, silent = true, desc = desc}
+        end
         local gitsigns = require('gitsigns')
-        keymap({'o', 'x'}, 'ih', gitsigns.select_hunk, opts)  -- Text object
+        keymap({'o', 'x'}, 'ih', gitsigns.select_hunk, get_opts('Select hunk'))
 
-        for dest, key in pairs({next = ']c', prev = '[c'}) do -- Navigation
+        for dest, key in pairs({next = ']c', prev = '[c'}) do
           keymap('', key, function()
             if vim.wo.diff then vim.cmd.normal({key, bang = true}) else gitsigns.nav_hunk(dest) end
-          end, opts)
+          end, get_opts('Navigate to'..dest..' hunk'))
         end
       end,
     },
@@ -189,9 +192,9 @@ require('lazy').setup {
       local cmp = require('cmp')
       return {
         mapping = cmp.mapping.preset.insert({
-          ['<C-CR>'] = cmp.mapping.confirm(),
-          ['<Tab>'] = cmp.mapping.select_next_item(),
-          ['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<C-CR>'] = cmp.mapping.confirm({desc = 'Confirm completion'}),
+          ['<Tab>'] = cmp.mapping.select_next_item({desc = 'Select next item'}),
+          ['<S-Tab>'] = cmp.mapping.select_prev_item({desc = 'Select previous item'}),
         }),
         sources = cmp.config.sources({{name = 'nvim_lsp'}}, {{name = 'buffer'}}, {{name = 'path'}}),
       }
@@ -283,18 +286,16 @@ require('lazy').setup {
         end,
         pythonPath = function() return vim.fn.system('which python3'):sub(1, -2) end,
       }}
-      local dapmap = {
-        c = dap.continue,
-        n = dap.step_over,
-        s = dap.step_into,
-        r = dap.step_out,
-        b = dap.toggle_breakpoint,
-        R = dap.repl.open,
-        l = dap.list_breakpoints, -- Populate quickfix list with breakpoints
-        B = function() vim.ui.input('Breakpoint condition: ', dap.set_breakpoint) end,
-        q = dap.terminate,
-      }
-      for key, val in pairs(dapmap) do keymap('', '<BS>'..key, val) end
+      keymap('', '<BS>c', dap.continue, {desc = 'Continue debugging'})
+      keymap('', '<BS>n', dap.step_over, {desc = 'Step over'})
+      keymap('', '<BS>s', dap.step_into, {desc = 'Step into'})
+      keymap('', '<BS>r', dap.step_out, {desc = 'Step out'})
+      keymap('', '<BS>b', dap.toggle_breakpoint, {desc = 'Toggle breakpoint'})
+      keymap('', '<BS>R', dap.repl.open, {desc = 'Open REPL'})
+      keymap('', '<BS>l', dap.list_breakpoints, {desc = 'Fill quickfix list with breakpoints'})
+      keymap('', '<BS>B', function() vim.ui.input('Breakpoint condition: ', dap.set_breakpoint) end,
+        {desc = 'Conditional breakpoint'})
+      keymap('', '<BS>q', dap.terminate, {desc = 'Terminate debugging'})
     end,
   },
   {
@@ -304,7 +305,7 @@ require('lazy').setup {
       local dap = require('dap')
       local dapui = require('dapui')
       dapui.setup()
-      keymap('', '<BS>w', dapui.toggle)
+      keymap('', '<BS>w', dapui.toggle, {desc = 'Toggle debug UI'})
       dap.listeners.before.attach.dapui_config = dapui.open
       dap.listeners.before.launch.dapui_config = dapui.open
       dap.listeners.before.event_terminated.dapui_config = dapui.close
@@ -331,8 +332,9 @@ require('lazy').setup {
   {
     'stevearc/aerial.nvim', -- Code outline window
     dependencies = {'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons'},
-    -- Mapping to <Leader>b because b for browse
-    opts = {on_attach = function() keymap('', '<Leader>b', require('aerial').toggle) end},
+    opts = {on_attach = function()
+      keymap('', '<Leader>b', require('aerial').toggle, {desc = 'Toggle browsing code'})
+    end},
   },
 
   -- AI
@@ -341,9 +343,9 @@ require('lazy').setup {
     config = function()
       vim.g.copilot_no_tab_map = true
       keymap('i', '<C-space>', 'copilot#Accept("")', {expr = true, replace_keycodes = false})
-      keymap('i', '<C-right>', '<Plug>(copilot-accept-word)')
-      keymap('i', '<C-up>', '<Plug>(copilot-previous)')
-      keymap('i', '<C-down>', '<Plug>(copilot-next)')
+      keymap('i', '<C-right>', '<Plug>(copilot-accept-word)', {desc = "Accept Copilot's next word"})
+      keymap('i', '<C-up>', '<Plug>(copilot-previous)', {desc = 'Previous Copilot suggestion'})
+      keymap('i', '<C-down>', '<Plug>(copilot-next)', {desc = 'Next Copilot suggestion'})
     end,
   },
   {
@@ -418,7 +420,7 @@ autocmd('LspAttach', {
 
     local function lspmap(mode, key, method, cmd)
       if client.supports_method('textDocument/'..method) then
-        keymap(mode, key, cmd, {silent = true, buffer = args.buf})
+        keymap(mode, key, cmd, {silent = true, buffer = args.buf, desc = 'LSP '..method})
       end
     end
 
