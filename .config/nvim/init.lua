@@ -233,7 +233,14 @@ require('lazy').setup {
   {
     'folke/which-key.nvim', -- Keymap helper
     event = 'VeryLazy',
-    opts = {},
+    opts = {spec = {
+      {'<Leader>a',        group = 'AI chat'},
+      {'<Leader>]',        group = 'Swap with next'},
+      {'<Leader>[',        group = 'Swap with previous'},
+      {'<BS>',             group = 'Debugging'},
+      {'<Leader><Leader>', group = 'LSP'},
+      {'<Leader>c',        group = 'Change working dir'},
+    }},
     keys = {{
       '<leader>?',
       function() require('which-key').show {global = false} end,
