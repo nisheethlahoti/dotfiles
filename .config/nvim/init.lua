@@ -161,7 +161,20 @@ require('lazy').setup {
       keymap('', '<Leader>h', fzf.command_history, {desc = 'Show command history'})
     end,
   },
-  'tpope/vim-fugitive',        -- Git usage integration
+  {
+    'tpope/vim-fugitive', -- Git usage integration
+    config = function()
+      autocmd('User', {   -- Modify `rf` to use `--committer-date-is-author-date`
+        pattern = {'FugitiveIndex', 'FugitivePager', 'FugitiveObject'},
+        callback = function()
+          local rf_map = vim.fn.maparg('rf', 'n', false, true)
+          if not rf_map.rhs then return end  -- No mapping found, nothing to do
+          rf_map.rhs = rf_map.rhs:gsub(' rebase ', ' rebase --committer-date-is-author-date ')
+          vim.fn.mapset(rf_map)
+        end,
+      })
+    end,
+  },
   {
     'lewis6991/gitsigns.nvim', -- hunk object and signs for changed lines
     opts = {
