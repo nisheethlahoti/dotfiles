@@ -269,12 +269,13 @@ require('lazy').setup {
     main = 'nvim-treesitter.configs',
     opts = function(_, opts)
       local maps = {a = 'parameter', f = 'function', c = 'class'}
+      local swap_type = {a = '', f = '.outer', c = '.outer'}
       local select_maps, swap_next_maps, swap_prev_maps = {}, {}, {}
       for k, v in pairs(maps) do
         select_maps['a'..k] = '@'..v..'.outer'
         select_maps['i'..k] = '@'..v..'.inner'
-        swap_next_maps['<Leader>]'..k] = '@'..v..'.outer'
-        swap_prev_maps['<Leader>['..k] = '@'..v..'.outer'
+        swap_next_maps['<Leader>]'..k] = '@'..v..swap_type[k]
+        swap_prev_maps['<Leader>['..k] = '@'..v..swap_type[k]
       end
 
       opts.textobjects = {
