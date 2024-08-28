@@ -378,56 +378,56 @@ require('lazy').setup {
   },
   {
     'robitx/gp.nvim', -- LLM Chat
-    config = function()
-      local gp = require('gp')
-      local disable_agents = {} -- Disable non-best agents of providers
-      for _, v in ipairs({'Claude-3-Haiku', 'GPT4o-mini'}) do
-        table.insert(disable_agents, {name = 'Chat'..v, disable = true})
-        table.insert(disable_agents, {name = 'Code'..v, disable = true})
-      end
-
-      gp.setup({
-        providers = {
-          anthropic = {disable = false},
-          openai = {disable = true},
-          copilot = {
-            disable = false,
-            secret = vim.tbl_values(
-              vim.json.decode(vim.fn.readfile(vim.env.HOME..'/.config/github-copilot/apps.json')[1])
-            )[1]['oauth_token'],
-          },
+    lazy = false,
+    opts = {
+      providers = {
+        anthropic = {disable = false},
+        openai = {disable = true},
+        copilot = {
+          disable = false,
+          secret = vim.tbl_values(
+            vim.json.decode(vim.fn.readfile(vim.env.HOME..'/.config/github-copilot/apps.json')[1])
+          )[1]['oauth_token'],
         },
-        agents = disable_agents,
-      })
-
+      },
+      agents = { -- Disable older/worse agents
+        {disable = true, name = 'ChatClaude-3-Haiku'},
+        {disable = true, name = 'ChatGPT-4o-mini'},
+        {disable = true, name = 'CodeClaude-3-Haiku'},
+        {disable = true, name = 'CodeGPT-4o-mini'},
+      },
+      hooks = {
+        Diff = function(gp, params)
+          local function write_diff(prompt)                        -- Return true on early abort
+            if not (prompt or ''):match('%S') then return true end -- empty prompt
+            local content = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), 0, -1, false)
+            vim.cmd('diffthis | vnew | set buftype=nofile | set bufhidden=wipe | diffthis')
+            vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, false, content)
+            gp.cmd.Rewrite(vim.tbl_extend('force', params, {args = prompt}))
+            vim.cmd.wincmd('p')                                       -- Move to the original window at the end
+          end
+          if not write_diff(params.args) then return end              -- Original prompt non-empty, just execute
+          vim.ui.input(gp.get_command_agent().cmd_prefix, write_diff) -- Ask for prompt and execute
+        end,
+      },
+      command_auto_select_response = false,
+    },
+    keys = {
       -- Chat commands
-      vim.keymap.set('', '<Leader>aa', ':GpChatToggle vsplit<cr>', {desc = 'Toggle chat'})
-      vim.keymap.set('', '<Leader>aA', ':GpChatNew vsplit<cr>', {desc = 'New chat'})
-      vim.keymap.set('', '<Leader>af', ':GpChatFinder<cr>', {desc = 'Find chat'})
-      vim.keymap.set('x', '<Leader>ap', ':GpChatPaste<cr>', {desc = 'Paste in chat'})
-
-      -- Credit: https://github.com/Robitx/gp.nvim/issues/191#issuecomment-2271698759
-      function _G.gp_diff(line1, line2)
-        vim.ui.input(gp.get_command_agent().cmd_prefix, function(prompt)
-          if prompt == nil or prompt == '' then return end
-          local contents = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), 0, -1, false)
-          vim.cmd('vnew | set buftype=nofile | set bufhidden=wipe')
-          vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, false, contents)
-          vim.cmd(line1..','..line2..'GpRewrite '..prompt)
-          vim.defer_fn(function() vim.cmd('diffthis | wincmd p | diffthis') end, 1000)
-        end)
-      end
+      {'<Leader>aa', ':GpChatToggle vsplit<cr>', mode = '',        desc = 'Toggle chat'},
+      {'<Leader>aA', ':GpChatNew vsplit<cr>',    mode = '',        desc = 'New chat'},
+      {'<Leader>af', ':GpChatFinder<cr>',        mode = '',        desc = 'Find chat'},
+      {'<Leader>ap', ':GpChatPaste<cr>',         mode = 'x',       desc = 'Paste in chat'},
 
       -- Prompt commands
-      vim.cmd('command! -range GpDiff lua gp_diff(<line1>, <line2>)')
-      vim.keymap.set('x', '<Leader>aw', ':GpDiff<CR>', {desc = 'Copilot rewrite'})
-      vim.keymap.set('x', '<Leader>ai', ':GpImplement<cr>', {desc = 'Implement selected text'})
+      {'<Leader>aw', ':GpDiff<CR>',              mode = 'x',       desc = 'Copilot rewrite'},
+      {'<Leader>ai', ':GpImplement<cr>',         mode = 'x',       desc = 'Implement selected text'},
 
       -- Generic commands
-      vim.keymap.set('', '<Leader>ac', ':GpContext vsplit<cr>', {desc = 'Open project context'})
-      vim.keymap.set('', '<Leader>ax', '<cmd>GpStop<cr>', {desc = 'Stop agent'})
-      vim.keymap.set('', '<Leader>an', '<cmd>GpNextAgent<cr>', {desc = 'Next agent'})
-    end,
+      {'<Leader>ac', ':GpContext vsplit<cr>',    mode = '',        desc = 'Open project context'},
+      {'<Leader>an', '<cmd>GpNextAgent<cr>',     mode = '',        desc = 'Next agent'},
+      {'<C-a>x',     '<cmd>GpStop<cr>',          mode = {'', '!'}, desc = 'Stop agent'},
+    },
   },
 
   -- Language specific
