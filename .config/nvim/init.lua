@@ -64,9 +64,7 @@ end
 keymap('', '<Leader>t', ':tab split<CR>', {desc = 'Make new tab with just this window'})
 keymap('', '<Leader>T', ':tabclose<CR>', {desc = 'Close tab'})
 
--- Replacing shortcuts, plus use very-magic for regexes
-keymap('', '/', '/\\v')
-keymap('', '?', '?\\v')
+-- Search with very-magic
 keymap('', '<Leader>s', ':s/\\v', {desc = 'Substitution with very-magic'})
 keymap('', '<Leader>S', ':%s/\\v', {desc = 'Whole file substitution with very-magic'})
 
@@ -90,6 +88,10 @@ command('Qa', 'qa<bang>', {bang = true})
 -- Commands for editing, help, and terminal in new vertical window
 command('E', 'vert new <args>', {nargs = '?', complete = 'file'})
 command('Term', 'vsplit | term', {desc = 'Open terminal in vertical split window'})
+
+-- Keymaps for browsing location list
+keymap('', '<Leader>n', function() vim.cmd(vim.v.count..'lne') end, {desc = 'Location list next'})
+keymap('', '<Leader>N', function() vim.cmd(vim.v.count..'lN') end, {desc = 'Location list prev'})
 
 -- Help and man in floating windows (supporting keywordprg)
 local function FloatingExec(cmdtext)
@@ -156,9 +158,13 @@ require('lazy').setup {
     dependencies = {'nvim-tree/nvim-web-devicons', {'junegunn/fzf', build = './install --all'}},
     config = function()
       local fzf = require('fzf-lua')
-      keymap('', '<Leader>o', fzf.files, {desc = 'Fuzzy find files'})
-      keymap('', '<Leader>l', fzf.live_grep, {desc = 'Live grep'})
-      keymap('', '<Leader>h', fzf.command_history, {desc = 'Show command history'})
+      keymap('', '<Leader>f', fzf.files, {desc = 'Fzf files'})
+      keymap('', '<Leader>l', fzf.live_grep, {desc = 'Fzf live grep'})
+      keymap('', '<Leader>b', fzf.buffers, {desc = 'Fzf Buffers'})
+      keymap('', '<Leader>j', fzf.jumps, {desc = 'Fzf Jumps'})
+      keymap('', '<Leader>/', fzf.lgrep_curbuf, {desc = 'Fzf-based buffer search'})
+      keymap('', '<Leader>h', fzf.help_tags, {desc = 'Fzf-based help search'})
+      keymap('', '<Leader><Leader>u', fzf.lsp_references, {desc = 'Usages of word under cursor'})
     end,
   },
   {
@@ -168,7 +174,7 @@ require('lazy').setup {
         pattern = {'FugitiveIndex', 'FugitivePager', 'FugitiveObject'},
         callback = function()
           local rf_map = vim.fn.maparg('rf', 'n', false, true)
-          if not rf_map.rhs then return end  -- No mapping found, nothing to do
+          if not rf_map.rhs then return end -- No mapping found, nothing to do
           rf_map.rhs = rf_map.rhs:gsub(' rebase ', ' rebase --committer-date-is-author-date ')
           vim.fn.mapset(rf_map)
         end,
@@ -286,6 +292,7 @@ require('lazy').setup {
   },
   {
     'mfussenegger/nvim-dap', -- Debug adapter protocol
+    dependencies = {'ibhagwan/fzf-lua'},
     config = function()
       local dap = require('dap')
       dap.adapters.python = {
@@ -313,7 +320,7 @@ require('lazy').setup {
       keymap('', '<BS>r', dap.step_out, {desc = 'Step out'})
       keymap('', '<BS>b', dap.toggle_breakpoint, {desc = 'Toggle breakpoint'})
       keymap('', '<BS>R', dap.repl.open, {desc = 'Open REPL'})
-      keymap('', '<BS>l', dap.list_breakpoints, {desc = 'Fill quickfix list with breakpoints'})
+      keymap('', '<BS>l', require('fzf-lua').dap_breakpoints, {desc = 'Browse breakpoints'})
       keymap('', '<BS>B', function() vim.ui.input('Breakpoint condition: ', dap.set_breakpoint) end,
         {desc = 'Conditional breakpoint'})
       keymap('', '<BS>q', dap.terminate, {desc = 'Terminate debugging'})
@@ -354,7 +361,7 @@ require('lazy').setup {
     'stevearc/aerial.nvim', -- Code outline window
     dependencies = {'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons'},
     opts = {on_attach = function()
-      keymap('', '<Leader>b', require('aerial').toggle, {desc = 'Toggle browsing code'})
+      keymap('', '<Leader>o', require('aerial').toggle, {desc = 'Toggle code outline'})
     end},
   },
 
@@ -472,7 +479,6 @@ autocmd('LspAttach', {
     lspmap('i', '<C-x>', 'signatureHelp', vim.lsp.buf.signature_help)
     map_to('h', 'signatureHelp', vim.lsp.buf.signature_help)
     map_to('r', 'rename', vim.lsp.buf.rename)
-    map_to('u', 'references', vim.lsp.buf.references)
     map_to('a', 'codeAction', vim.lsp.buf.code_action)
     map_to('D', 'typeDefinition', vim.lsp.buf.type_definition)
     map_to('i', 'inlayHint', function()
