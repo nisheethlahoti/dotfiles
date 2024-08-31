@@ -132,6 +132,9 @@ end, {desc = 'Toggle binary/hex view'})
 local wrap_ft = {'text', 'markdown'}
 autocmd('FileType', {callback = function(e) vim.wo.wrap = vim.list_contains(wrap_ft, e.match) end})
 
+-- Color order in 16-color (i.e. cterm color #1 is Red, #2 is Green, etc.)
+local colors = {'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan'}
+
 -- Setup plugins
 require('lazy').setup {
   -- Editing motions
@@ -433,7 +436,19 @@ require('lazy').setup {
   -- Language specific
   {
     'MeanderingProgrammer/render-markdown.nvim',
-    opts = {},
+    config = function()
+      require('render-markdown').setup {}
+      for i, c in ipairs({5, 4, 6, 2, 3, 1}) do -- Set highlight colors in VIBGYOR order
+        highlight(0, 'RenderMarkdownH'..i..'Bg', {bg = 'NvimDark'..colors[c], ctermbg = c})
+      end
+      vim.api.nvim_create_autocmd('OptionSet', { -- Disable in diff mode
+        pattern = 'diff',
+        callback = function()
+          if vim.bo.filetype ~= 'markdown' then return end
+          vim.cmd('RenderMarkdown '..(vim.v.option_new and 'disable' or 'enable'))
+        end,
+      })
+    end,
     dependencies = {'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons'},
   },
 }
