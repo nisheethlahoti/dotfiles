@@ -135,6 +135,9 @@ autocmd('FileType', {callback = function(e) vim.wo.wrap = vim.list_contains(wrap
 -- Color order in 16-color (i.e. cterm color #1 is Red, #2 is Green, etc.)
 local colors = {'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan'}
 
+-- Get the output of function, or nil if it errors
+local function optional(func) return ({xpcall(func, function(_) end)})[2] end
+
 -- Setup plugins
 require('lazy').setup {
   -- Editing motions
@@ -188,9 +191,7 @@ require('lazy').setup {
     'lewis6991/gitsigns.nvim', -- hunk object and signs for changed lines
     opts = {
       on_attach = function(bufnr)
-        local function get_opts(desc)
-          return {buffer = bufnr, silent = true, desc = desc}
-        end
+        local function get_opts(desc) return {buffer = bufnr, silent = true, desc = desc} end
         local gitsigns = require('gitsigns')
         keymap({'o', 'x'}, 'ih', gitsigns.select_hunk, get_opts('Select hunk'))
 
@@ -227,16 +228,12 @@ require('lazy').setup {
     dependencies = {'hrsh7th/nvim-cmp', 'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path'},
     config = function()
       local cmp = require('cmp')
+      local function cmdtable(...)
+        return {mapping = cmp.mapping.preset.cmdline(), sources = cmp.config.sources(...)}
+      end
 
-      cmp.setup.cmdline({'/', '?'}, {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = {{name = 'buffer'}},
-      })
-
-      cmp.setup.cmdline(':', {
-        mapping = cmp.mapping.preset.cmdline(),
-        sources = cmp.config.sources({{name = 'path'}}, {{name = 'cmdline'}}),
-      })
+      cmp.setup.cmdline({'/', '?'}, cmdtable {{name = 'buffer'}})
+      cmp.setup.cmdline(':', cmdtable({{name = 'path'}}, {{name = 'cmdline'}}))
     end,
   },
   {
@@ -384,21 +381,16 @@ require('lazy').setup {
     lazy = false,
     opts = {
       providers = {
-        anthropic = {disable = false},
-        openai = {disable = true},
-        copilot = {
-          disable = false,
-          secret = vim.tbl_values(
-            vim.json.decode(vim.fn.readfile(vim.env.HOME..'/.config/github-copilot/apps.json')[1])
-          )[1]['oauth_token'],
-        },
+        anthropic = {disable = not vim.env.ANTHROPIC_API_KEY},
+        openai = {disable = not vim.env.OPENAI_API_KEY},
+        copilot = optional(function()
+          local x = vim.fn.readfile(vim.env.HOME..'/.config/github-copilot/apps.json')[1]
+          return {disable = false, secret = vim.tbl_values(vim.json.decode(x))[1]['oauth_token']}
+        end),
       },
-      agents = { -- Disable older/worse agents
-        {disable = true, name = 'ChatClaude-3-Haiku'},
-        {disable = true, name = 'ChatGPT-4o-mini'},
-        {disable = true, name = 'CodeClaude-3-Haiku'},
-        {disable = true, name = 'CodeGPT-4o-mini'},
-      },
+      agents = vim.iter({'Claude-3-Haiku', 'GPT4o-mini'}) -- Disable older/worse agents
+          :map(function(v) return {'Chat'..v, 'Code'..v} end):flatten()
+          :map(function(v) return {name = v, disable = true} end):totable(),
       hooks = {
         Diff = function(gp, params)
           local function write_diff(prompt)                        -- Return true on early abort
@@ -429,7 +421,7 @@ require('lazy').setup {
       -- Generic commands
       {'<Leader>ac', ':GpContext vsplit<cr>',    mode = '',        desc = 'Open project context'},
       {'<Leader>an', '<cmd>GpNextAgent<cr>',     mode = '',        desc = 'Next agent'},
-      {'<C-a>x',     '<cmd>GpStop<cr>',          mode = {'', '!'}, desc = 'Stop agent'},
+      {'<C-g>x',     '<cmd>GpStop<cr>',          mode = {'', '!'}, desc = 'Stop agent'},
     },
   },
 
@@ -520,13 +512,10 @@ vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
   vim.lsp.diagnostic.on_publish_diagnostics, {virtual_text = dfilter, signs = dfilter}
 )
 
--- Show borders in hover and signature help. Make signature help transient.
+-- Show borders in hover and signature help.
 vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {border = 'single'})
-vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-  border = 'single',
-  focus = false,
-  close_events = {'CursorMoved', 'CursorMovedI', 'TextChangedI', 'TextChangedP', 'ModeChanged'},
-})
+vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
+  vim.lsp.handlers.signature_help, {border = 'single', focus = false})
 
 -- Because default clang-format settings, as well as my zshrc, have 2 spaces
 autocmd('FileType', {
