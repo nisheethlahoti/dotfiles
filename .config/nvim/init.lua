@@ -153,14 +153,15 @@ require('lazy').setup {
 
   -- General
   'tpope/vim-vinegar',           -- Browsing files
+  'tpope/vim-speeddating',       -- Increment/decrement dates
   {
     'nvim-lualine/lualine.nvim', -- Better status line
     dependencies = {'nvim-tree/nvim-web-devicons'},
     opts = {options = {theme = 'nord'}},
   },
-  {'stevearc/dressing.nvim', opts = {}}, -- Better UI for input and select
+  {'stevearc/dressing.nvim',  opts = {}}, -- Better UI for input and select
   {
-    'ibhagwan/fzf-lua',                  -- Vim bindings for fzf
+    'ibhagwan/fzf-lua',                   -- Vim bindings for fzf
     dependencies = {'nvim-tree/nvim-web-devicons', {'junegunn/fzf', build = './install --all'}},
     config = function()
       local fzf = require('fzf-lua')
@@ -339,21 +340,20 @@ require('lazy').setup {
       dap.listeners.before.event_terminated.dapui_config = dapui.close
     end,
   },
+  {'williamboman/mason.nvim', opts = {}}, -- Package manager for LSP
   {
-    'neovim/nvim-lspconfig',
-    dependencies = {'hrsh7th/cmp-nvim-lsp'},
+    'williamboman/mason-lspconfig.nvim',  -- Bridge mason and lspconfig
+    dependencies = {'williamboman/mason.nvim', 'neovim/nvim-lspconfig', 'hrsh7th/cmp-nvim-lsp'},
     config = function()
-      local lspc = require('lspconfig')
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
       local function lsp_set(name, settings)
-        lspc[name].setup(vim.tbl_deep_extend('keep', settings or {}, {capabilities = capabilities}))
+        local capabilities = {capabilities = require('cmp_nvim_lsp').default_capabilities()}
+        require('lspconfig')[name].setup(vim.tbl_deep_extend('keep', settings or {}, capabilities))
       end
-      lsp_set('rust_analyzer', {cmd = {'rustup', 'run', 'nightly', 'rust-analyzer'}})
-      lsp_set('clangd', {cmd = {'clangd', '--clang-tidy', '--header-insertion=never'}})
-      lsp_set('pyright')
-      lsp_set('ruff')
-      lsp_set('lua_ls')
-      lsp_set('jsonls')
+      local mls = require('mason-lspconfig')
+      mls.setup {ensure_installed = {'clangd', 'pyright', 'ruff', 'lua_ls', 'jsonls'}}
+      mls.setup_handlers {lsp_set, clangd = function()
+        lsp_set('clangd', {cmd = {'clangd', '--clang-tidy', '--header-insertion=never'}})
+      end}
     end,
     -- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
   },
