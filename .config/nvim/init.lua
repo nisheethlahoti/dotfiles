@@ -449,6 +449,7 @@ require('lazy').setup {
 autocmd('LspAttach', {
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
+    assert(client, 'No client found for LspAttach event')
 
     -- Server-specific: disable ruff's hover in favor of pyright
     if client.name == 'ruff' then client.server_capabilities.hoverProvider = false end
@@ -488,13 +489,9 @@ autocmd('LspAttach', {
     map_to('r', 'rename', vim.lsp.buf.rename)
     map_to('a', 'codeAction', vim.lsp.buf.code_action)
     map_to('D', 'typeDefinition', vim.lsp.buf.type_definition)
-    map_to('i', 'inlayHint', function()
-      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(), {bufnr = args.buf})
-    end)
-
-    if client.supports_method('textDocument/inlayHint') then
-      vim.lsp.inlay_hint.enable(true, {bufnr = args.buf})
-    end
+    local buf = {bufnr = args.buf}
+    map_to('i', 'inlayHint',
+      function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(buf), buf) end)
 
     if client.supports_method('textDocument/codeLens') then
       vim.lsp.codelens.refresh()
