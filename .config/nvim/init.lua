@@ -450,6 +450,7 @@ autocmd('LspAttach', {
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
     assert(client, 'No client found for LspAttach event')
+    client.server_capabilities.semanticTokensProvider = nil -- Disable semantic tokens
 
     -- Server-specific: disable ruff's hover in favor of pyright
     if client.name == 'ruff' then client.server_capabilities.hoverProvider = false end
@@ -545,6 +546,8 @@ highlight(0, 'PreProc', {ctermfg = 10, fg = 'NvimLightGreen'})
 highlight(0, 'String', {ctermfg = 13, fg = 'LightMagenta'})
 highlight(0, 'Comment', {ctermfg = 3, cterm = {italic = true}, fg = '#ddaaaa', italic = true})
 highlight(0, '@variable.builtin', {ctermfg = 14, fg = 'NvimLightCyan'})
+highlight(0, '@string.documentation', {ctermfg = 13, cterm = {italic = true}, fg = '#ee99bb'})
+highlight(0, '@comment.documentation', {link = '@string.documentation'})
 
 -- Iterate over all hl groups and link ones ending with '.builtin' to '@variable.builtin'
 for hl in vim.gsplit(vim.api.nvim_exec2('highlight', {output = true}).output, '\n') do
