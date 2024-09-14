@@ -152,7 +152,13 @@ require('lazy').setup {
   },
 
   -- General
-  'tpope/vim-vinegar',           -- Browsing files
+  {
+    'stevearc/oil.nvim', -- Directory browser
+    lazy = false,
+    opts = {},
+    dependencies = {'nvim-tree/nvim-web-devicons'},
+    keys = {{'-', function() require('oil').open() end, desc = 'Open parent directory'}},
+  },
   'tpope/vim-speeddating',       -- Increment/decrement dates
   {
     'nvim-lualine/lualine.nvim', -- Better status line
