@@ -93,6 +93,11 @@ command('Term', 'vsplit | term', {desc = 'Open terminal in vertical split window
 keymap('', '<Leader>n', function() vim.cmd(vim.v.count..'lne') end, {desc = 'Location list next'})
 keymap('', '<Leader>N', function() vim.cmd(vim.v.count..'lN') end, {desc = 'Location list prev'})
 
+-- Keymaps for stopping/jumping snippets
+keymap({'i', 'n'}, '<C-BS>', vim.snippet.stop, {desc = 'Stop snippet'})
+keymap({'i', 'n'}, '<C-;>', function() vim.snippet.jump(1) end, {desc = 'Jump ahead in snippet'})
+keymap({'i', 'n'}, '<C-,>', function() vim.snippet.jump(-1) end, {desc = 'Jump back in snippet'})
+
 -- Help and man in floating windows (supporting keywordprg)
 local function FloatingExec(cmdtext)
   return function(cmd)
