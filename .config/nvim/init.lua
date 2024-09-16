@@ -153,6 +153,10 @@ require('lazy').setup {
 
   -- General
   {
+    'simnalamburt/vim-mundo', -- Undo tree visualizer
+    keys = {{'U', ':MundoToggle<CR>', desc = 'Toggle undo tree'}},
+  },
+  {
     'stevearc/oil.nvim', -- Directory browser
     lazy = false,
     opts = {},
