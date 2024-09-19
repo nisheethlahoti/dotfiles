@@ -151,11 +151,6 @@ require('lazy').setup {
   'tpope/vim-repeat',                -- Use '.' with several plugins
   'jeetsukumaran/vim-indentwise',    -- Motions over indented blocks
   'michaeljsmith/vim-indent-object', -- Indent textobjects
-  {
-    'ggandor/flit.nvim',             -- Better f/F/t/T
-    dependencies = {'ggandor/leap.nvim'},
-    opts = {labeled_modes = 'nx'},
-  },
 
   -- General
   {
