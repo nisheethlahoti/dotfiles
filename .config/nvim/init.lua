@@ -89,9 +89,10 @@ command('Qa', 'qa<bang>', {bang = true})
 command('E', 'vert new <args>', {nargs = '?', complete = 'file'})
 command('Term', 'vsplit | term', {desc = 'Open terminal in vertical split window'})
 
--- Keymaps for browsing location list
-keymap('', '<Leader>n', function() vim.cmd(vim.v.count..'lne') end, {desc = 'Location list next'})
-keymap('', '<Leader>N', function() vim.cmd(vim.v.count..'lN') end, {desc = 'Location list prev'})
+-- Keymaps for browsing quickfix list
+keymap('', '<Leader>n', function() vim.cmd(vim.v.count..'cne') end, {desc = 'QuickFix list next'})
+keymap('', '<Leader>N', function() vim.cmd(vim.v.count..'cN') end, {desc = 'QuickFix list prev'})
+keymap('', '<Leader>q', '<cmd>copen<CR>', {desc = 'Open quickfix list'})
 
 -- Keymaps for stopping/jumping snippets
 keymap({'i', 'n'}, '<C-BS>', vim.snippet.stop, {desc = 'Stop snippet'})
@@ -186,7 +187,11 @@ require('lazy').setup {
       keymap('', '<Leader>j', fzf.jumps, {desc = 'Fzf Jumps'})
       keymap('', '<Leader>/', fzf.lgrep_curbuf, {desc = 'Fzf-based buffer search'})
       keymap('', '<Leader>h', fzf.help_tags, {desc = 'Fzf-based help search'})
-      keymap('', '<Leader><Leader>u', fzf.lsp_references, {desc = 'Usages of word under cursor'})
+      fzf.setup {keymap = {fzf = {['ctrl-q'] = 'select-all+accept'}}} -- Send results to quickfix
+      vim.api.nvim_create_autocmd('FileType', {                       -- Always open quickfix in fzf
+        pattern = 'qf',
+        callback = vim.schedule_wrap(function() vim.cmd('cclose | FzfLua quickfix') end),
+      })
     end,
   },
   {
@@ -308,7 +313,6 @@ require('lazy').setup {
   },
   {
     'mfussenegger/nvim-dap', -- Debug adapter protocol
-    dependencies = {'ibhagwan/fzf-lua'},
     config = function()
       local dap = require('dap')
       dap.adapters.python = {
@@ -336,7 +340,7 @@ require('lazy').setup {
       keymap('', '<BS>r', dap.step_out, {desc = 'Step out'})
       keymap('', '<BS>b', dap.toggle_breakpoint, {desc = 'Toggle breakpoint'})
       keymap('', '<BS>R', dap.repl.open, {desc = 'Open REPL'})
-      keymap('', '<BS>l', require('fzf-lua').dap_breakpoints, {desc = 'Browse breakpoints'})
+      keymap('', '<BS>l', dap.list_breakpoints, {desc = 'Browse breakpoints'})
       keymap('', '<BS>B', function() vim.ui.input('Breakpoint condition: ', dap.set_breakpoint) end,
         {desc = 'Conditional breakpoint'})
       keymap('', '<BS>q', dap.terminate, {desc = 'Terminate debugging'})
@@ -505,6 +509,7 @@ autocmd('LspAttach', {
     map_to('r', 'rename', vim.lsp.buf.rename)
     map_to('a', 'codeAction', vim.lsp.buf.code_action)
     map_to('D', 'typeDefinition', vim.lsp.buf.type_definition)
+    map_to('u', 'references', vim.lsp.buf.references)
     local buf = {bufnr = args.buf}
     map_to('i', 'inlayHint',
       function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(buf), buf) end)
