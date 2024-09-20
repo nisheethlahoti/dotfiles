@@ -15,7 +15,7 @@ function update-pkgs() {
         ubuntu) sudo sh -c 'apt update && apt dist-upgrade && apt autoremove --purge && apt clean ; snap refresh' ; clean-snap ;;
         fedora) sudo sh -c 'dnf -y upgrade && dnf -y clean packages';;
         '"amzn"') sudo sh -c 'yum -y update && yum -y clean packages';;
-        arch) sudo sh -c 'pacman -Syu && pacman -Scc';;
+        arch) sudo sh -c 'pacman -Syu && pacman -Scc && pkgfile --update';;
         *) echo "Unrecognized linux flavor. Skipping upgrade"
       esac;;
     Darwin) brew update && brew upgrade && brew cleanup -s --prune=all;;
@@ -32,7 +32,7 @@ function pvtar() {
 }
 
 function gitshow() {
-  git difftool ${1:-HEAD}~ ${1:-HEAD}
+  git difftool ${1:-HEAD}~ ${1:-HEAD} ${@:2}
 }
 
 function update-all() {
