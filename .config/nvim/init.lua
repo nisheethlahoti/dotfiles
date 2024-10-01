@@ -46,9 +46,6 @@ if os.getenv('SSH_TTY') then
 end
 
 vim.g.mapleader = ' '
-if vim.fn.isdirectory(os.getenv('HOME')..'/micromamba') then
-  vim.g.python3_host_prog = os.getenv('HOME')..'/micromamba/bin/python'
-end
 
 -- Difference from original file
 command('DiffOrig',
@@ -312,8 +309,7 @@ require('lazy').setup {
       local dap = require('dap')
       dap.adapters.python = {
         type = 'executable',
-        command = vim.g.python3_host_prog,
-        args = {'-m', 'debugpy.adapter'},
+        command = vim.fn.exepath('debugpy-adapter'),
       }
       dap.configurations.python = {{
         -- nvim-dap options
