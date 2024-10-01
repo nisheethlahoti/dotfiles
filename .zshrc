@@ -473,18 +473,8 @@ setopt PATH_DIRS               # perform path search even on command names with 
 setopt SHARE_HISTORY           # write and import history on every command
 setopt C_BASES                 # print hex/oct numbers as 0xFF/077 instead of 16#FF/8#77
 
-# >>> mamba initialize >>>
-export MAMBA_EXE="$(whence micromamba)";
-export MAMBA_ROOT_PREFIX="$HOME/micromamba";
-__mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__mamba_setup"
-else
-    . "$HOME/micromamba/etc/profile.d/micromamba.sh"
-fi
-unset __mamba_setup
-micromamba activate base
-# <<< mamba initialize <<<
-
 eval "$(atuin init zsh --disable-up-arrow)"  # Initialize atuin history
 export VIDFLAGS=(-b:v 0 -crf 18 -profile:v high444 -preset veryfast -tune zerolatency -movflags +faststart)
+
+# Activate base python env (needs to be done at the end since deactivate pops the path from there)
+[ -d ~/basepython/bin ] && source ~/basepython/bin/activate

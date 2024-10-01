@@ -46,6 +46,7 @@ if os.getenv('SSH_TTY') then
 end
 
 vim.g.mapleader = ' '
+vim.g.python3_host_prog = vim.env.HOME..'/basepython/bin/python'
 
 -- Difference from original file
 command('DiffOrig',
