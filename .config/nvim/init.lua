@@ -158,7 +158,7 @@ require('lazy').setup {
   {
     'stevearc/oil.nvim', -- Directory browser
     lazy = false,
-    opts = {},
+    opts = {delete_to_trash = true},
     dependencies = {'nvim-tree/nvim-web-devicons'},
     keys = {{'-', function() require('oil').open() end, desc = 'Open parent directory'}},
   },
@@ -406,8 +406,10 @@ require('lazy').setup {
         Diff = function(gp, params)
           local function write_diff(prompt)                        -- Return true on early abort
             if not (prompt or ''):match('%S') then return true end -- empty prompt
-            local content = vim.api.nvim_buf_get_lines(vim.api.nvim_get_current_buf(), 0, -1, false)
+            local oldbuf = vim.api.nvim_get_current_buf()
+            local content = vim.api.nvim_buf_get_lines(oldbuf, 0, -1, false)
             vim.cmd('diffthis | vnew | set buftype=nofile | set bufhidden=wipe | diffthis')
+            vim.bo.filetype = vim.api.nvim_get_option_value('filetype', {buf = oldbuf})
             vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, false, content)
             gp.cmd.Rewrite(vim.tbl_extend('force', params, {args = prompt}))
             vim.cmd.wincmd('p')                                       -- Move to the original window at the end
