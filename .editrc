@@ -1,1 +1,3 @@
 bind -v
+bind ^R em-inc-search-prev
+bind ^I rl_complete
