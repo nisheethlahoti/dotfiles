@@ -8,6 +8,7 @@
 	cmd = nvim -d $LOCAL $REMOTE
 [alias]
 	get = fetch -p --recurse-submodules
+	ff = merge --ff-only
 [init]
 	defaultBranch = master
 [fetch]
