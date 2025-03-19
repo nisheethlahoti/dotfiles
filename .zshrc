@@ -47,7 +47,10 @@ function update-all() {
   echo "WARNING: ZSH History modified. Not updating backup."
 
   nvm install stable --reinstall-packages-from=current
+  nvm ls --no-colors --no-alias | grep -v "$(nvm current)" | awk '{print $1}' | while read version; do nvm uninstall $version; done
+  nvm cache clear
   npm update -g
+  npm cache clean --force
   z4h update
 }
 
