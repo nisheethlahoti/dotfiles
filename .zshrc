@@ -358,7 +358,12 @@ fi
 #   -F   exit if there is less than one page of content
 #   -M   show more info at the bottom prompt line
 #   -x4  tabs are 4 spaces wide instead of 8
-export LESS="-iRFMx4 --mouse"
+#   --mouse  enable mouse support in tmux, but breaks selections
+if [ -n "$TMUX" ]; then
+    export LESS="-iRFMx4 --mouse"
+else
+    export LESS="-iRFMx4"
+fi
 
 # Export variables.
 export PAGER=less
