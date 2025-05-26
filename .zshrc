@@ -45,12 +45,6 @@ function update-all() {
   cp ~/.zsh_history ~/.zsh_history.bak &&
   echo "Zsh history backed up" ||
   echo "WARNING: ZSH History modified. Not updating backup."
-
-  nvm install stable --reinstall-packages-from=current
-  nvm ls --no-colors --no-alias | grep -v "$(nvm current)" | awk '{print $1}' | while read version; do nvm uninstall $version; done
-  nvm cache clear
-  npm update -g
-  npm cache clean --force
   z4h update
 }
 
@@ -453,11 +447,6 @@ export LC_ALL=en_US.UTF-8
 [ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ ${path[(i)$HOME/.local/bin]} -gt ${#path} ] && path=(~/.local/bin $path)
-
-# For managing node versions
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Enable decent options. See http://zsh.sourceforge.net/Doc/Release/Options.html.
 emulate zsh                    # restore default options just in case something messed them up
