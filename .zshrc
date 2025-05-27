@@ -191,6 +191,11 @@ elif (( $+commands[brew] )); then
       return 127
     }
   }
+elif (( $+commands[dnf] )); then
+  function command_not_found_handler() {
+    echo "zsh: command not found: $1"
+    dnf provides "$1"
+  }
 fi
 
 # The same as up-line-or-history but for local history.
