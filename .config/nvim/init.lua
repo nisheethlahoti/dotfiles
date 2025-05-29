@@ -217,33 +217,27 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
         opts = { log_level = 'error' },
     },
     {
-        'hrsh7th/nvim-cmp', -- Autocomplete
-        dependencies = { 'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path' },
-        opts = function()
-            local cmp = require('cmp')
-            return {
-                mapping = cmp.mapping.preset.insert({
-                    ['<C-CR>'] = cmp.mapping.confirm({ desc = 'Confirm completion' }),
-                    ['<Tab>'] = cmp.mapping.select_next_item({ desc = 'Select next item' }),
-                    ['<S-Tab>'] = cmp.mapping.select_prev_item({ desc = 'Select previous item' }),
-                }),
-                sources = cmp.config.sources({ { name = 'nvim_lsp' } }, { { name = 'buffer' } },
-                    { { name = 'path' } }),
-            }
-        end,
-    },
-    {
-        'hrsh7th/cmp-cmdline', -- Autocomplete for command line
-        dependencies = { 'hrsh7th/nvim-cmp', 'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path' },
-        config = function()
-            local cmp = require('cmp')
-            local function cmdtable(...)
-                return { mapping = cmp.mapping.preset.cmdline(), sources = cmp.config.sources(...) }
-            end
-
-            cmp.setup.cmdline({ '/', '?' }, cmdtable { { name = 'buffer' } })
-            cmp.setup.cmdline(':', cmdtable({ { name = 'path' } }, { { name = 'cmdline' } }))
-        end,
+        'saghen/blink.cmp', -- Autocomplete
+        version = '1.*',
+        opts = {
+            keymap = {
+                preset = 'none',
+                ['<C-CR>'] = { 'show', 'select_and_accept' },
+                ['<Tab>'] = { 'select_next', 'fallback' },
+                ['<S-Tab>'] = { 'select_prev', 'fallback' },
+            },
+            completion = {
+                documentation = { auto_show = true },
+                list = { selection = { preselect = false } }
+            },
+            cmdline = {
+                keymap = { preset = 'inherit' },
+                completion = {
+                    menu = { auto_show = true },
+                    list = { selection = { preselect = false } }
+                },
+            },
+        },
     },
     {
         'folke/which-key.nvim', -- Keymap helper
