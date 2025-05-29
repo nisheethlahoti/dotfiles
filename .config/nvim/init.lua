@@ -1,3 +1,4 @@
+---@diagnostic disable: missing-return, inject-field
 local vim = vim
 local autocmd = vim.api.nvim_create_autocmd
 local command = vim.api.nvim_create_user_command
@@ -6,8 +7,8 @@ local highlight = vim.api.nvim_set_hl
 
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
-if not vim.loop.fs_stat(lazypath) then
-    vim.system { 'git', 'clone', 'https://github.com/folke/lazy.nvim', '-b', 'stable', lazypath }
+if not vim.uv.fs_stat(lazypath) then
+    vim.system { 'git', 'clone', 'https://github.com/folke/lazy.nvim', '-b', 'stable', lazypath }:wait()
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -28,14 +29,14 @@ vim.opt.lcs:append('extends:>')         -- Show marker if line extends beyond sc
 vim.opt.matchpairs:append('<:>')        -- Use '%' to navigate between '<' and '>'
 vim.o.foldenable = false                -- Folds off by default
 vim.o.foldmethod = 'expr'               -- Fold according to given expression (treesitter)
-vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
-vim.o.foldtext = 'gitgutter#fold#foldtext()'
+vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.o.winborder = 'single'              -- Use single line for window borders
 vim.opt.clipboard:append('unnamedplus') -- Use clipboard by default for yank/delete/paste
 vim.opt.display:append('uhex')          -- Show hex for unprintable characters
 vim.o.diffopt = vim.o.diffopt .. ',vertical,algorithm:histogram,indent-heuristic'
 
 -- Set clipboard to OSC52 in case of ssh (copy into clipboard from remote locations)
-if os.getenv('SSH_TTY') then
+if vim.env.SSH_TTY then
     local function paste() return { vim.split(vim.fn.getreg(''), '\n'), vim.fn.getregtype('') } end
     local osc52 = require('vim.ui.clipboard.osc52')
     vim.g.clipboard = {
@@ -88,14 +89,7 @@ command('E', 'vert new <args>', { nargs = '?', complete = 'file' })
 command('Term', 'vsplit | term', { desc = 'Open terminal in vertical split window' })
 
 -- Keymaps for browsing quickfix list
-keymap('', '<Leader>n', function() vim.cmd(vim.v.count .. 'cne') end, { desc = 'QuickFix list next' })
-keymap('', '<Leader>N', function() vim.cmd(vim.v.count .. 'cN') end, { desc = 'QuickFix list prev' })
 keymap('', '<Leader>q', '<cmd>copen<CR>', { desc = 'Open quickfix list' })
-
--- Keymaps for stopping/jumping snippets
-keymap({ 'i', 'n' }, '<C-BS>', vim.snippet.stop, { desc = 'Stop snippet' })
-keymap({ 'i', 'n' }, '<C-;>', function() vim.snippet.jump(1) end, { desc = 'Jump ahead in snippet' })
-keymap({ 'i', 'n' }, '<C-,>', function() vim.snippet.jump(-1) end, { desc = 'Jump back in snippet' })
 
 -- Help and man in floating windows (supporting keywordprg)
 local function FloatingExec(cmdtext)
@@ -113,7 +107,7 @@ local function FloatingExec(cmdtext)
             vim.api.nvim_exec2(cmdtext .. ' ' .. cmd.args, {})
             keymap('n', '<Esc>', vim.cmd.q, { buffer = true, silent = true, desc = 'Close popup' })
         end, function(err)
-            vim.api.nvim_err_writeln(err)
+            vim.notify(err, vim.log.levels.ERROR)
             vim.cmd.quit()
         end)
     end
@@ -143,7 +137,7 @@ local colors = { 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan' }
 local function optional(func) return ({ xpcall(func, function(_) end) })[2] end
 
 -- Setup plugins
-require('lazy').setup {
+require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-not-match
     -- Editing motions
     'tpope/vim-surround',              -- Surround with parentheses/HTML-tags etc.
     'tpope/vim-repeat',                -- Use '.' with several plugins
@@ -218,8 +212,8 @@ require('lazy').setup {
         },
     },
     {
-        'rmagatti/auto-session',               -- Remote persistence for neovim
-        enabled = os.getenv('SSH_TTY') ~= nil, -- Only use in SSH environments
+        'rmagatti/auto-session',          -- Remote persistence for neovim
+        enabled = vim.env.SSH_TTY ~= nil, -- Only use in SSH environments
         opts = { log_level = 'error' },
     },
     {
@@ -255,12 +249,12 @@ require('lazy').setup {
         'folke/which-key.nvim', -- Keymap helper
         event = 'VeryLazy',
         opts = { spec = {
-            { '<Leader>a',        group = 'AI chat' },
-            { '<Leader>]',        group = 'Swap with next' },
-            { '<Leader>[',        group = 'Swap with previous' },
-            { '<BS>',             group = 'Debugging' },
-            { '<Leader><Leader>', group = 'LSP' },
-            { '<Leader>c',        group = 'Change working dir' },
+            { '<Leader>a', group = 'AI chat' },
+            { '<Leader>]', group = 'Swap with next' },
+            { '<Leader>[', group = 'Swap with previous' },
+            { '<BS>',      group = 'Debugging' },
+            { 'gr',        group = 'LSP' },
+            { '<Leader>c', group = 'Change working dir' },
         } },
         keys = { {
             '<leader>?',
@@ -334,8 +328,9 @@ require('lazy').setup {
             keymap('', '<BS>b', dap.toggle_breakpoint, { desc = 'Toggle breakpoint' })
             keymap('', '<BS>R', dap.repl.open, { desc = 'Open REPL' })
             keymap('', '<BS>l', dap.list_breakpoints, { desc = 'Browse breakpoints' })
-            keymap('', '<BS>B', function() vim.ui.input('Breakpoint condition: ', dap.set_breakpoint) end,
-                { desc = 'Conditional breakpoint' })
+            keymap('', '<BS>B', function()
+                vim.ui.input({ prompt = 'Breakpoint condition: ' }, dap.set_breakpoint)
+            end, { desc = 'Conditional breakpoint' })
             keymap('', '<BS>q', dap.terminate, { desc = 'Terminate debugging' })
         end,
     },
@@ -352,22 +347,11 @@ require('lazy').setup {
             dap.listeners.before.event_terminated.dapui_config = dapui.close
         end,
     },
-    { 'williamboman/mason.nvim', opts = {} }, -- Package manager for LSP
+    { 'mason-org/mason.nvim',   opts = {} }, -- Package manager for LSP
     {
-        'williamboman/mason-lspconfig.nvim',  -- Bridge mason and lspconfig
-        dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig', 'hrsh7th/cmp-nvim-lsp' },
-        config = function()
-            local function lsp_set(name, settings)
-                local capabilities = { capabilities = require('cmp_nvim_lsp').default_capabilities() }
-                require('lspconfig')[name].setup(vim.tbl_deep_extend('keep', settings or {}, capabilities))
-            end
-            local mls = require('mason-lspconfig')
-            mls.setup { ensure_installed = { 'clangd', 'pyright', 'ruff', 'lua_ls', 'jsonls' } }
-            mls.setup_handlers { lsp_set, clangd = function()
-                lsp_set('clangd', { cmd = { 'clangd', '--clang-tidy', '--header-insertion=never' } })
-            end }
-        end,
-        -- TODO(neovim/16807): Set logfile path in temp, and possibly improve format
+        'mason-org/mason-lspconfig.nvim',    -- Configs for LSP servers
+        dependencies = { 'mason-org/mason.nvim', 'neovim/nvim-lspconfig' },
+        opts = { ensure_installed = { 'clangd', 'pyright', 'ruff', 'emmylua_ls', 'jsonls' } },
     },
     {
         'stevearc/aerial.nvim', -- Code outline window
@@ -413,10 +397,10 @@ require('lazy').setup {
                         vim.bo.filetype = vim.api.nvim_get_option_value('filetype', { buf = oldbuf })
                         vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, false, content)
                         gp.cmd.Rewrite(vim.tbl_extend('force', params, { args = prompt }))
-                        vim.cmd.wincmd('p')                                     -- Move to the original window at the end
+                        vim.cmd.wincmd('p')                                                  -- Move to the original window at the end
                     end
-                    if not write_diff(params.args) then return end              -- Original prompt non-empty, just execute
-                    vim.ui.input(gp.get_command_agent().cmd_prefix, write_diff) -- Ask for prompt and execute
+                    if not write_diff(params.args) then return end                           -- Original prompt non-empty, just execute
+                    vim.ui.input({ prompt = gp.get_command_agent().cmd_prefix }, write_diff) -- Ask for prompt and execute
                 end,
             },
             command_auto_select_response = false,
@@ -462,36 +446,34 @@ require('lazy').setup {
 -- Keybindings and default changes on attaching LSP
 autocmd('LspAttach', {
     callback = function(args)
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        assert(client, 'No client found for LspAttach event')
+        local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+        assert(client.server_capabilities, 'LSP client has no server capabilities')
         client.server_capabilities.semanticTokensProvider = nil -- Disable semantic tokens
 
         -- Server-specific: disable ruff's hover in favor of pyright
         if client.name == 'ruff' then client.server_capabilities.hoverProvider = false end
 
-        local function lspmap(mode, key, method, cmd)
-            if client.supports_method('textDocument/' .. method) then
-                keymap(mode, key, cmd, { silent = true, buffer = args.buf, desc = 'LSP ' .. method })
+        local function map_to(key, method, cmd)
+            if client:supports_method('textDocument/' .. method) then
+                keymap('', 'gr' .. key, cmd, { silent = true, buffer = args.buf, desc = 'LSP ' .. method })
             end
         end
-
-        local function map_to(key, method, cmd) lspmap('', '<Leader><Leader>' .. key, method, cmd) end
 
         map_to('f', 'formatting', function()
             -- TODO(neovim/neovim/24168): Replace below with 2 lines using vim.lsp.buf.code_action
             for _, action in ipairs({ 'source.fixAll', 'source.organizeImports' }) do
-                local params = vim.lsp.util.make_range_params()
+                local params = vim.lsp.util.make_range_params(nil, client.offset_encoding)
                 params.context = { only = { action }, diagnostics = {} }
-                local result = client.request_sync('textDocument/codeAction', params, 1000, args.buf)
+                local result = client:request_sync('textDocument/codeAction', params, 1000, args.buf)
                 for _, r in ipairs((result or {}).result or {}) do
                     if not (r.command or r.edit) then
-                        r = client.request_sync('codeAction/resolve', r, 1000, args.buf).result
+                        r = assert(client:request_sync('codeAction/resolve', r, 1000, args.buf)).result
                     end
                     if r.edit then
                         vim.lsp.util.apply_workspace_edit(r.edit, client.offset_encoding)
                     elseif r.command then
                         local r_command = type(r.command) == 'table' and r.command or r
-                        client.request_sync('workspace/executeCommand', r_command, 1000, args.buf)
+                        client:request_sync('workspace/executeCommand', r_command, 1000, args.buf)
                     end
                     vim.lsp._changetracking.flush(client, args.buf)
                 end
@@ -499,17 +481,11 @@ autocmd('LspAttach', {
             vim.lsp.buf.format()
         end)
 
-        lspmap('i', '<C-x>', 'signatureHelp', vim.lsp.buf.signature_help)
-        map_to('h', 'signatureHelp', vim.lsp.buf.signature_help)
-        map_to('r', 'rename', vim.lsp.buf.rename)
-        map_to('a', 'codeAction', vim.lsp.buf.code_action)
-        map_to('D', 'typeDefinition', vim.lsp.buf.type_definition)
-        map_to('u', 'references', vim.lsp.buf.references)
         local buf = { bufnr = args.buf }
-        map_to('i', 'inlayHint',
+        map_to('h', 'inlayHint',
             function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(buf), buf) end)
 
-        if client.supports_method('textDocument/codeLens') then
+        if client:supports_method('textDocument/codeLens') then
             vim.lsp.codelens.refresh()
             vim.api.nvim_create_autocmd(
                 { 'BufEnter', 'CursorHold', 'InsertLeave' },
@@ -519,16 +495,12 @@ autocmd('LspAttach', {
     end,
 })
 
--- Disable displaying 'HINT' diagnostics
+-- Disable displaying 'HINT' diagnostics + show virtual_text by default
 local dfilter = { severity = { min = vim.diagnostic.severity.INFO } }
-vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
-    vim.lsp.diagnostic.on_publish_diagnostics, { virtual_text = dfilter, signs = dfilter }
-)
+vim.diagnostic.config { virtual_text = dfilter, signs = dfilter } ---@diagnostic disable-line: param-type-not-match
 
--- Show borders in hover and signature help.
-vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'single' })
-vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
-    vim.lsp.handlers.signature_help, { border = 'single', focus = false })
+-- Custom LSP configurations
+vim.lsp.config('clangd', { cmd = { 'clangd', '--clang-tidy', '--header-insertion=never' } })
 
 -- Because default clang-format settings, as well as my zshrc, have 2 spaces
 autocmd('FileType', {
@@ -567,7 +539,7 @@ highlight(0, '@comment.documentation', { link = '@string.documentation' })
 -- Iterate over all hl groups and link ones ending with '.builtin' to '@variable.builtin'
 for hl in vim.gsplit(vim.api.nvim_exec2('highlight', { output = true }).output, '\n') do
     -- hl looks like '<GroupName> xxx <Highlight settings for group>'
-    local group = vim.split(hl, ' ')[1]
+    local group = assert(vim.split(hl, ' ')[1])
     if vim.endswith(group, '.builtin') and group ~= '@variable.builtin' then
         highlight(0, group, { link = '@variable.builtin' })
     end
