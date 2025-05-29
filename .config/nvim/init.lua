@@ -326,6 +326,18 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
                 vim.ui.input({ prompt = 'Breakpoint condition: ' }, dap.set_breakpoint)
             end, { desc = 'Conditional breakpoint' })
             keymap('', '<BS>q', dap.terminate, { desc = 'Terminate debugging' })
+
+            -- Attach to running process open on some port on localhost
+            dap.adapters.socket = function(cb, cfg) cb { type = 'server', port = cfg.port } end
+            keymap('', '<BS>A', function()
+                dap.run {
+                    name = 'Attach to running process',
+                    type = 'socket',
+                    request = 'attach',
+                    justMyCode = false,
+                    port = tonumber(vim.fn.input('Port: ')),
+                }
+            end, { desc = 'DAP attach to running process' })
         end,
     },
     {
