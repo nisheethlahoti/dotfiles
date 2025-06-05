@@ -38,6 +38,7 @@ function gitshow() {
 function update-all() {
   update-pkgs
   nvim --headless "+Lazy! sync" +qa
+  uv tool upgrade --all
 
   ! [ -f ~/.zsh_history.bak ] ||
 
