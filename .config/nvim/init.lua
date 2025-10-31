@@ -299,7 +299,7 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
             local dap = require('dap')
             dap.adapters.python = {
                 type = 'executable',
-                command = vim.fn.exepath('debugpy-adapter'),
+                command = vim.env.HOME .. '/.local/share/nvim/mason/bin/debugpy-adapter'
             }
             dap.configurations.python = { {
                 -- nvim-dap options
