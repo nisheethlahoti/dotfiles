@@ -1,4 +1,4 @@
----@diagnostic disable: missing-return, inject-field
+---@diagnostic disable: assign-type-mismatch, inject-field
 local vim = vim
 local autocmd = vim.api.nvim_create_autocmd
 local command = vim.api.nvim_create_user_command
@@ -133,11 +133,8 @@ autocmd('FileType', { callback = function(e) vim.wo.wrap = vim.list_contains(wra
 -- Color order in 16-color (i.e. cterm color #1 is Red, #2 is Green, etc.)
 local colors = { 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan' }
 
--- Get the output of function, or nil if it errors
-local function optional(func) return ({ xpcall(func, function(_) end) })[2] end
-
 -- Setup plugins
-require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-not-match
+require('lazy').setup {
     -- Editing motions
     'tpope/vim-surround',              -- Surround with parentheses/HTML-tags etc.
     'tpope/vim-repeat',                -- Use '.' with several plugins
@@ -175,7 +172,7 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
             keymap('', '<Leader>/', fzf.lgrep_curbuf, { desc = 'Fzf-based buffer search' })
             keymap('', '<Leader>h', fzf.help_tags, { desc = 'Fzf-based help search' })
             fzf.setup { keymap = { fzf = { ['ctrl-q'] = 'select-all+accept' } } } -- Send results to quickfix
-            vim.api.nvim_create_autocmd('FileType', {                             -- Always open quickfix in fzf
+            autocmd('FileType', {                                                 -- Open quickfix only in fzf
                 pattern = 'qf',
                 callback = vim.schedule_wrap(function() vim.cmd('cclose | FzfLua quickfix') end),
             })
@@ -201,11 +198,11 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
             on_attach = function(bufnr)
                 local function get_opts(desc) return { buffer = bufnr, silent = true, desc = desc } end
                 local gitsigns = require('gitsigns')
-                keymap({ 'o', 'x' }, 'ih', gitsigns.select_hunk, get_opts('Select hunk'))
+                keymap({ 'o', 'x' }, 'ih', assert(gitsigns.select_hunk), get_opts('Select hunk'))
 
                 for dest, key in pairs({ next = ']c', prev = '[c' }) do
                     keymap('', key, function()
-                        if vim.wo.diff then vim.cmd.normal({ key, bang = true }) else gitsigns.nav_hunk(dest) end
+                        if vim.wo.diff then vim.cmd.normal({ key, bang = true }) else gitsigns.nav_hunk(dest) end ---@diagnostic disable-line: param-type-mismatch
                     end, get_opts('Navigate to' .. dest .. ' hunk'))
                 end
             end,
@@ -228,13 +225,19 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
             },
             completion = {
                 documentation = { auto_show = true },
-                list = { selection = { preselect = false } }
+                list = { selection = { preselect = false } },
             },
             cmdline = {
                 keymap = { preset = 'inherit' },
                 completion = {
                     menu = { auto_show = true },
-                    list = { selection = { preselect = false } }
+                    list = { selection = { preselect = false } },
+                },
+            },
+            sources = {
+                default = { 'lazydev', 'lsp', 'path', 'snippets', 'buffer' },
+                providers = {
+                    lazydev = { name = 'LazyDev', module = 'lazydev.integrations.blink', score_offset = 100 },
                 },
             },
         },
@@ -299,7 +302,7 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
             local dap = require('dap')
             dap.adapters.python = {
                 type = 'executable',
-                command = vim.env.HOME .. '/.local/share/nvim/mason/bin/debugpy-adapter'
+                command = vim.env.HOME .. '/.local/share/nvim/mason/bin/debugpy-adapter',
             }
             dap.configurations.python = { {
                 -- nvim-dap options
@@ -356,7 +359,7 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
     {
         'mason-org/mason-lspconfig.nvim',    -- Configs for LSP servers
         dependencies = { 'mason-org/mason.nvim', 'neovim/nvim-lspconfig' },
-        opts = { ensure_installed = { 'clangd', 'pyright', 'ruff', 'emmylua_ls', 'jsonls' } },
+        opts = { ensure_installed = { 'clangd', 'pyright', 'ruff', 'lua_ls', 'jsonls' } },
     },
     {
         'stevearc/aerial.nvim', -- Code outline window
@@ -414,13 +417,21 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
 
     -- Language specific
     {
+        'folke/lazydev.nvim',
+        ft = 'lua', -- only load on lua files
+        opts = {
+            -- Load luvit types when the `vim.uv` word is found
+            library = { { path = '${3rd}/luv/library', words = { 'vim%.uv' } } },
+        },
+    },
+    {
         'MeanderingProgrammer/render-markdown.nvim',
         config = function()
             require('render-markdown').setup {}
             for i, c in ipairs({ 5, 4, 6, 2, 3, 1 }) do -- Set highlight colors in VIBGYOR order
                 highlight(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NvimDark' .. colors[c], ctermbg = c })
             end
-            vim.api.nvim_create_autocmd('OptionSet', { -- Disable in diff mode
+            autocmd('OptionSet', { -- Disable in diff mode
                 pattern = 'diff',
                 callback = function()
                     if vim.bo.filetype ~= 'markdown' then return end
@@ -476,7 +487,7 @@ autocmd('LspAttach', {
 
         if client:supports_method('textDocument/codeLens') then
             vim.lsp.codelens.refresh()
-            vim.api.nvim_create_autocmd(
+            autocmd(
                 { 'BufEnter', 'CursorHold', 'InsertLeave' },
                 { buffer = args.buf, callback = vim.lsp.codelens.refresh }
             )
@@ -486,14 +497,14 @@ autocmd('LspAttach', {
 
 -- Disable displaying 'HINT' diagnostics + show virtual_text by default
 local dfilter = { severity = { min = vim.diagnostic.severity.INFO } }
-vim.diagnostic.config { virtual_text = dfilter, signs = dfilter } ---@diagnostic disable-line: param-type-not-match
+vim.diagnostic.config { virtual_text = dfilter, signs = dfilter }
 
 -- Custom LSP configurations
 vim.lsp.config('clangd', { cmd = { 'clangd', '--clang-tidy', '--header-insertion=never' } })
 
 -- Because default clang-format settings, as well as my zshrc, have 2 spaces
 autocmd('FileType', {
-    pattern = { 'c', 'cpp', 'lua', 'zsh', 'yaml' },
+    pattern = { 'c', 'cpp', 'zsh', 'yaml' },
     callback = function(_) vim.bo.ts, vim.bo.sw, vim.bo.expandtab = 2, 2, true end,
 })
 
