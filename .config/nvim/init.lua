@@ -370,6 +370,7 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
     {
         'github/copilot.vim', -- Github copilot support
         config = function()
+            vim.g.copilot_filetypes = { text = false }
             vim.g.copilot_no_tab_map = true
             keymap('i', '<C-space>', 'copilot#Accept("")', { expr = true, replace_keycodes = false })
             keymap('i', '<C-right>', '<Plug>(copilot-accept-word)', { desc = "Accept Copilot's next word" })
@@ -378,54 +379,37 @@ require('lazy').setup { ---@diagnostic disable-line: missing-fields, param-type-
         end,
     },
     {
-        'robitx/gp.nvim', -- LLM Chat
-        lazy = false,
-        opts = {
-            providers = {
-                anthropic = { disable = not vim.env.ANTHROPIC_API_KEY },
-                openai = { disable = not vim.env.OPENAI_API_KEY },
-                copilot = optional(function()
-                    local x = vim.fn.readfile(vim.env.HOME .. '/.config/github-copilot/apps.json')[1]
-                    return { disable = false, secret = vim.tbl_values(vim.json.decode(x))[1]['oauth_token'] }
-                end),
-            },
-            agents = vim.iter({ 'Claude-3-Haiku', 'GPT4o-mini' }) -- Disable older/worse agents
-                :map(function(v) return { 'Chat' .. v, 'Code' .. v } end):flatten()
-                :map(function(v) return { name = v, disable = true } end):totable(),
-            hooks = {
-                Diff = function(gp, params)
-                    local function write_diff(prompt)                          -- Return true on early abort
-                        if not (prompt or ''):match('%S') then return true end -- empty prompt
-                        local oldbuf = vim.api.nvim_get_current_buf()
-                        local content = vim.api.nvim_buf_get_lines(oldbuf, 0, -1, false)
-                        vim.cmd('diffthis | vnew | set buftype=nofile | set bufhidden=wipe | diffthis')
-                        vim.bo.filetype = vim.api.nvim_get_option_value('filetype', { buf = oldbuf })
-                        vim.api.nvim_buf_set_lines(vim.api.nvim_get_current_buf(), 0, -1, false, content)
-                        gp.cmd.Rewrite(vim.tbl_extend('force', params, { args = prompt }))
-                        vim.cmd.wincmd('p')                                                  -- Move to the original window at the end
+        'folke/sidekick.nvim', -- Next edit suggestion + LLM Chat
+        config = function()
+            require('sidekick').setup { cli = { mux = { enabled = true } } }
+            autocmd('OptionSet', { -- Disable next-edit-suggestion in diff mode
+                pattern = 'diff',
+                callback = function()
+                    -- Temporarily store sidekick_nes value in new variable called sidekick_nes_nondiff
+                    if vim.v.option_new then
+                        vim.b.sidekick_nes_nondiff = vim.b.sidekick_nes
+                        vim.b.sidekick_nes = false
+                    else
+                        vim.b.sidekick_nes = vim.b.sidekick_nes_nondiff
                     end
-                    if not write_diff(params.args) then return end                           -- Original prompt non-empty, just execute
-                    vim.ui.input({ prompt = gp.get_command_agent().cmd_prefix }, write_diff) -- Ask for prompt and execute
                 end,
-            },
-            command_auto_select_response = false,
-        },
-        keys = {
-            -- Chat commands
-            { '<Leader>aa', ':GpChatToggle vsplit<cr>', mode = '',          desc = 'Toggle chat' },
-            { '<Leader>aA', ':GpChatNew vsplit<cr>',    mode = '',          desc = 'New chat' },
-            { '<Leader>af', ':GpChatFinder<cr>',        mode = '',          desc = 'Find chat' },
-            { '<Leader>ap', ':GpChatPaste<cr>',         mode = 'x',         desc = 'Paste in chat' },
-
-            -- Prompt commands
-            { '<Leader>aw', ':GpDiff<CR>',              mode = 'x',         desc = 'Copilot rewrite' },
-            { '<Leader>ai', ':GpImplement<cr>',         mode = 'x',         desc = 'Implement selected text' },
-
-            -- Generic commands
-            { '<Leader>ac', ':GpContext vsplit<cr>',    mode = '',          desc = 'Open project context' },
-            { '<Leader>an', '<cmd>GpNextAgent<cr>',     mode = '',          desc = 'Next agent' },
-            { '<C-g>x',     '<cmd>GpStop<cr>',          mode = { '', '!' }, desc = 'Stop agent' },
-        },
+            })
+            autocmd('FileType', { -- Disable next-edit-suggestion for plaintext files
+                pattern = { 'text' },
+                callback = function() vim.b.sidekick_nes = false end,
+            })
+            keymap('n', '<Leader>aa', ':Sidekick cli toggle<cr>', { desc = 'Toggle AI chat' })
+            keymap('n', '<Leader>as', ':Sidekick cli select<cr>', { desc = 'Select AI model' })
+            keymap('n', '<Leader>af', ':Sidekick cli send msg="{file}"<cr>', { desc = 'Send File' })
+            keymap('', '<Leader>at', ':Sidekick cli send msg="{this}"<cr>', { desc = 'Send This' })
+            keymap('', '<Leader>ap', ':Sidekick cli prompt<cr>', { desc = 'AI Prompt' })
+            keymap('n', '<Tab>', function()
+                -- if there is a next edit, jump to it, otherwise apply it if any
+                if not require('sidekick').nes_jump_or_apply() then
+                    return '<Tab>' -- fallback to normal tab
+                end
+            end, { expr = true, desc = 'Goto/Apply Next Edit Suggestion' })
+        end,
     },
 
     -- Language specific
