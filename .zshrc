@@ -18,7 +18,7 @@ function update-pkgs() {
         arch) sudo sh -c 'pacman -Syu && pacman -Scc && pkgfile --update';;
         *) echo "Unrecognized linux flavor. Skipping upgrade"
       esac;;
-    Darwin) brew update && brew upgrade && brew cleanup -s --prune=all;;
+    Darwin) brew update && brew upgrade --greedy && brew cleanup -s --prune=all;;
     *) echo "Unrecognized OS, skipping upgrade";;
   esac
 }
