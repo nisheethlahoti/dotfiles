@@ -371,15 +371,17 @@ require('lazy').setup {
 
     -- AI
     {
-        'github/copilot.vim', -- Github copilot support
-        config = function()
-            vim.g.copilot_filetypes = { text = false }
-            vim.g.copilot_no_tab_map = true
-            keymap('i', '<C-space>', 'copilot#Accept("")', { expr = true, replace_keycodes = false })
-            keymap('i', '<C-right>', '<Plug>(copilot-accept-word)', { desc = "Accept Copilot's next word" })
-            keymap('i', '<C-up>', '<Plug>(copilot-previous)', { desc = 'Previous Copilot suggestion' })
-            keymap('i', '<C-down>', '<Plug>(copilot-next)', { desc = 'Next Copilot suggestion' })
-        end,
+        'zbirenbaum/copilot.lua', -- Github copilot support
+        opts = {
+            suggestion = {
+                auto_trigger = true,
+                keymap = {
+                    accept = '<C-space>', accept_word = '<C-right>', prev = '<C-up>', next = '<C-down>',
+                },
+            },
+            panel = { enabled = false },
+            filetypes = { text = false },
+        },
     },
     {
         'folke/sidekick.nvim', -- Next edit suggestion + LLM Chat
