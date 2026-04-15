@@ -455,7 +455,7 @@ export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 [ "${HOST##*internal*}" ] || export iterm2_hostname="$(hostname -f | sed -E 's/\.internal//')"
 [ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
-[ -d "$HOME/.atuin" ] && source "$HOME/.atuin/bin/env"
+[ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 [ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
 [ ${path[(i)$HOME/.local/bin]} -gt ${#path} ] && path=(~/.local/bin $path)
