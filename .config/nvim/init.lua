@@ -33,7 +33,7 @@ vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.o.winborder = 'single'              -- Use single line for window borders
 vim.opt.clipboard:append('unnamedplus') -- Use clipboard by default for yank/delete/paste
 vim.opt.display:append('uhex')          -- Show hex for unprintable characters
-vim.o.diffopt = vim.o.diffopt .. ',vertical,algorithm:histogram,indent-heuristic'
+vim.o.diffopt = vim.o.diffopt .. ',vertical,algorithm:histogram'
 
 -- Set clipboard to OSC52 in case of ssh (copy into clipboard from remote locations)
 if vim.env.SSH_TTY then
@@ -70,6 +70,13 @@ keymap('', '<Leader>S', ':%s/\\v', { desc = 'Whole file substitution with very-m
 -- For clearing out last search highlight
 keymap('n', '<Esc>', vim.cmd.noh, { silent = true, desc = 'Clear highlighting from last search' })
 
+-- Undo-tree visualizer
+vim.cmd.packadd('nvim.undotree')
+keymap('n', 'U', require('undotree').open, { desc = 'Toggle undo tree' })
+
+-- Directory/file diff via :DiffTool (also replaces `nvim -d` for git difftool)
+vim.cmd.packadd('nvim.difftool')
+
 -- Commands to change directory to current file's and back to global
 keymap('n', '<Leader>cd', ':lcd %:p:h | pwd<CR>', { desc = 'Change directory to file' })
 keymap('n', '<Leader>cD', ':exe "lcd" getcwd(-1, -1) | pwd<CR>',
@@ -105,7 +112,7 @@ local function FloatingExec(cmdtext)
 
         xpcall(function()
             vim.api.nvim_exec2(cmdtext .. ' ' .. cmd.args, {})
-            keymap('n', '<Esc>', vim.cmd.q, { buffer = true, silent = true, desc = 'Close popup' })
+            keymap('n', '<Esc>', vim.cmd.q, { buf = 0, silent = true, desc = 'Close popup' })
         end, function(err)
             vim.notify(err, vim.log.levels.ERROR)
             vim.cmd.quit()
@@ -142,10 +149,6 @@ require('lazy').setup {
     'michaeljsmith/vim-indent-object', -- Indent textobjects
 
     -- General
-    {
-        'simnalamburt/vim-mundo', -- Undo tree visualizer
-        keys = { { 'U', ':MundoToggle<CR>', desc = 'Toggle undo tree' } },
-    },
     {
         'stevearc/oil.nvim', -- Directory browser
         lazy = false,
@@ -196,7 +199,7 @@ require('lazy').setup {
         'lewis6991/gitsigns.nvim', -- hunk object and signs for changed lines
         opts = {
             on_attach = function(bufnr)
-                local function get_opts(desc) return { buffer = bufnr, silent = true, desc = desc } end
+                local function get_opts(desc) return { buf = bufnr, silent = true, desc = desc } end
                 local gitsigns = require('gitsigns')
                 keymap({ 'o', 'x' }, 'ih', assert(gitsigns.select_hunk), get_opts('Select hunk'))
 
@@ -263,37 +266,39 @@ require('lazy').setup {
     -- Language awareness
     {
         'nvim-treesitter/nvim-treesitter', -- Language syntax parsing
+        branch = 'main',
+        lazy = false,                      -- Plugin does not support lazy-loading on the main branch
         build = ':TSUpdate',
-        main = 'nvim-treesitter.configs',
-        opts = {
-            ensure_installed = { 'bash', 'cpp', 'lua', 'python', 'rust', 'vim', 'vimdoc' },
-            auto_install = true, -- On entering new buffer, install its parser if available
-            highlight = { enable = true, additional_vim_regex_highlighting = false },
-            incremental_selection = {
-                enable = true,
-                keymaps = { node_incremental = '/', node_decremental = '?' },
-            },
-        },
+        init = function()
+            require('nvim-treesitter').install { 'bash', 'cpp', 'lua', 'python', 'rust', 'vim', 'vimdoc' }
+            autocmd('FileType', {
+                callback = function()
+                    pcall(vim.treesitter.start)
+                    vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                end,
+            })
+        end,
     },
     {
         'nvim-treesitter/nvim-treesitter-textobjects', -- Text-objects based on treesitter
+        branch = 'main',
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
-        main = 'nvim-treesitter.configs',
-        opts = function(_, opts)
+        config = function()
             local maps = { a = 'parameter', f = 'function', c = 'class' }
             local swap_type = { a = '', f = '.outer', c = '.outer' }
-            local select_maps, swap_next_maps, swap_prev_maps = {}, {}, {}
+            local ts_select = require('nvim-treesitter-textobjects.select').select_textobject
+            local ts_swap = require('nvim-treesitter-textobjects.swap')
             for k, v in pairs(maps) do
-                select_maps['a' .. k] = '@' .. v .. '.outer'
-                select_maps['i' .. k] = '@' .. v .. '.inner'
-                swap_next_maps['<Leader>]' .. k] = '@' .. v .. swap_type[k]
-                swap_prev_maps['<Leader>[' .. k] = '@' .. v .. swap_type[k]
+                local vo = '@' .. v .. '.outer'
+                local vi = '@' .. v .. '.inner'
+                keymap({ 'x', 'o' }, 'a' .. k, function() ts_select(vo) end, { desc = 'Around ' .. v })
+                keymap({ 'x', 'o' }, 'i' .. k, function() ts_select(vi) end, { desc = 'Inside ' .. v })
+                local sw = '@' .. v .. swap_type[k]
+                keymap('n', '<Leader>]' .. k, function() ts_swap.swap_next(sw) end,
+                    { desc = 'Swap next ' .. v })
+                keymap('n', '<Leader>[' .. k, function() ts_swap.swap_previous(sw) end,
+                    { desc = 'Swap prev ' .. v })
             end
-
-            opts.textobjects = {
-                select = { enable = true, keymaps = select_maps },
-                swap = { enable = true, swap_next = swap_next_maps, swap_previous = swap_prev_maps },
-            }
         end,
     },
     {
@@ -457,7 +462,7 @@ autocmd('LspAttach', {
 
         local function map_to(key, method, cmd)
             if client:supports_method('textDocument/' .. method) then
-                keymap('', 'gr' .. key, cmd, { silent = true, buffer = args.buf, desc = 'LSP ' .. method })
+                keymap('', 'gr' .. key, cmd, { silent = true, buf = args.buf, desc = 'LSP ' .. method })
             end
         end
 
@@ -488,11 +493,7 @@ autocmd('LspAttach', {
             function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled(buf), buf) end)
 
         if client:supports_method('textDocument/codeLens') then
-            vim.lsp.codelens.refresh()
-            autocmd(
-                { 'BufEnter', 'CursorHold', 'InsertLeave' },
-                { buffer = args.buf, callback = vim.lsp.codelens.refresh }
-            )
+            vim.lsp.codelens.enable(true, { bufnr = args.buf })
         end
     end,
 })
@@ -538,10 +539,8 @@ highlight(0, '@variable.builtin', { ctermfg = 14, fg = 'NvimLightCyan' })
 highlight(0, '@string.documentation', { ctermfg = 13, cterm = { italic = true }, fg = '#ee99bb' })
 highlight(0, '@comment.documentation', { link = '@string.documentation' })
 
--- Iterate over all hl groups and link ones ending with '.builtin' to '@variable.builtin'
-for hl in vim.gsplit(vim.api.nvim_exec2('highlight', { output = true }).output, '\n') do
-    -- hl looks like '<GroupName> xxx <Highlight settings for group>'
-    local group = assert(vim.split(hl, ' ')[1])
+-- Link all hl groups ending in '.builtin' to '@variable.builtin'
+for group in pairs(vim.api.nvim_get_hl(0, {})) do
     if vim.endswith(group, '.builtin') and group ~= '@variable.builtin' then
         highlight(0, group, { link = '@variable.builtin' })
     end
