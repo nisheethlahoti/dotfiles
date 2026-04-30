@@ -98,10 +98,14 @@ command('Term', 'vsplit | term', { desc = 'Open terminal in vertical split windo
 -- Keymaps for browsing quickfix list
 keymap('', '<Leader>q', '<cmd>copen<CR>', { desc = 'Open quickfix list' })
 
--- Help and man in floating windows (supporting keywordprg)
-local function FloatingExec(cmdtext)
-    return function(cmd)
-        vim.api.nvim_open_win(vim.api.nvim_create_buf(false, true), true, {
+-- Re-parent help/man buffers from their default split into a floating window
+local floatable_ft = { help = true, man = true }
+autocmd('BufWinEnter', {
+    callback = function(args)
+        if not floatable_ft[vim.bo[args.buf].filetype] then return end
+        local win = vim.api.nvim_get_current_win()
+        if vim.api.nvim_win_get_config(win).relative ~= '' then return end -- already a float
+        vim.api.nvim_open_win(args.buf, true, {
             relative = 'editor',
             row = math.floor(0.1 * vim.o.lines),
             col = math.floor(0.1 * vim.o.columns),
@@ -109,22 +113,9 @@ local function FloatingExec(cmdtext)
             width = math.floor(0.8 * vim.o.columns),
             border = 'single',
         })
-
-        xpcall(function()
-            vim.api.nvim_exec2(cmdtext .. ' ' .. cmd.args, {})
-            keymap('n', '<Esc>', vim.cmd.q, { buf = 0, silent = true, desc = 'Close popup' })
-        end, function(err)
-            vim.notify(err, vim.log.levels.ERROR)
-            vim.cmd.quit()
-        end)
-    end
-end
-
-command('Help', FloatingExec('set buftype=help | help'), { nargs = '?', complete = 'help' })
-command('FloatMan', FloatingExec('Man! | Man'), { nargs = 1 })
-local keywordmap = { [':help'] = ':Help', [':Man'] = ':FloatMan' }
-autocmd('BufEnter', {
-    callback = function(_) vim.o.keywordprg = keywordmap[vim.o.keywordprg] or vim.o.keywordprg end,
+        vim.api.nvim_win_close(win, true)
+        keymap('n', '<Esc>', vim.cmd.q, { buf = args.buf, silent = true, desc = 'Close popup' })
+    end,
 })
 
 -- Convert binary file to readable bytes output and vice-versa
