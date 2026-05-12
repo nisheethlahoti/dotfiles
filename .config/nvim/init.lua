@@ -203,11 +203,6 @@ require('lazy').setup {
         },
     },
     {
-        'rmagatti/auto-session',          -- Remote persistence for neovim
-        enabled = vim.env.SSH_TTY ~= nil, -- Only use in SSH environments
-        opts = { log_level = 'error' },
-    },
-    {
         'saghen/blink.cmp', -- Autocomplete
         version = '1.*',
         opts = {
@@ -355,14 +350,7 @@ require('lazy').setup {
     {
         'mason-org/mason-lspconfig.nvim',    -- Configs for LSP servers
         dependencies = { 'mason-org/mason.nvim', 'neovim/nvim-lspconfig' },
-        opts = { ensure_installed = { 'clangd', 'pyright', 'ruff', 'lua_ls', 'jsonls' } },
-    },
-    {
-        'stevearc/aerial.nvim', -- Code outline window
-        dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
-        opts = { on_attach = function()
-            keymap('', '<Leader>o', require('aerial').toggle, { desc = 'Toggle code outline' })
-        end },
+        opts = { ensure_installed = { 'clangd', 'pyright', 'ruff', 'lua_ls', 'jsonls', 'tombi' } },
     },
 
     -- AI
@@ -421,23 +409,6 @@ require('lazy').setup {
             -- Load luvit types when the `vim.uv` word is found
             library = { { path = '${3rd}/luv/library', words = { 'vim%.uv' } } },
         },
-    },
-    {
-        'MeanderingProgrammer/render-markdown.nvim',
-        config = function()
-            require('render-markdown').setup {}
-            for i, c in ipairs({ 5, 4, 6, 2, 3, 1 }) do -- Set highlight colors in VIBGYOR order
-                highlight(0, 'RenderMarkdownH' .. i .. 'Bg', { bg = 'NvimDark' .. colors[c], ctermbg = c })
-            end
-            autocmd('OptionSet', { -- Disable in diff mode
-                pattern = 'diff',
-                callback = function()
-                    if vim.bo.filetype ~= 'markdown' then return end
-                    vim.cmd('RenderMarkdown ' .. (vim.v.option_new and 'disable' or 'enable'))
-                end,
-            })
-        end,
-        dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' },
     },
 }
 
