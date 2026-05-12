@@ -282,6 +282,10 @@ SAVEHIST=1000000000                        # infinite command history
 
 bindkey -v  # enable vim keymap
 
+autoload -Uz add-zle-hook-widget
+_vi_cursor() { printf '\e[%s q' $([[ $KEYMAP = vicmd ]] && echo 2 || echo 6) }
+add-zle-hook-widget zle-keymap-select _vi_cursor
+
 # WezTerm shell integration (semantic OSC 133 markers).
 for _wt in /Applications/WezTerm.app/Contents/Resources/wezterm.sh /etc/profile.d/wezterm.sh; do
   [[ -r $_wt ]] && { source $_wt; break }
@@ -414,9 +418,12 @@ fi
 # Customize p10k config to show time with every previous command
 POWERLEVEL9K_LEFT_PROMPT_ELEMENTS+=(command_execution_time time)
 POWERLEVEL9K_TIME_FORMAT="%D{%d/%m %H:%M:%S}"
+POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD=0
+POWERLEVEL9K_COMMAND_EXECUTION_TIME_PRECISION=1
 POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
-function p10k-on-pre-prompt() { p10k display '1|2/left/prompt_char|2/right'=show '2/left/time|2/left/command_execution_time'=hide }
-function p10k-on-post-prompt() { p10k display '1|2/left/prompt_char|2/right'=hide '2/left/time|2/left/command_execution_time'=show }
+RESIDUALS='time|command_execution_time'
+function p10k-on-pre-prompt() { p10k display "1/left/^($RESIDUALS)|1/right"=show "1/left/($RESIDUALS)"=hide }
+function p10k-on-post-prompt() { p10k display "1/left/^($RESIDUALS)|1/right"=hide "1/left/($RESIDUALS)"=show }
 
 POWERLEVEL9K_SHORTEN_STRATEGY=truncate_middle  # Default truncate_to_unique is nice but hangs on super-large dirs
 z4h source $Z4H_DIR/romkatv/powerlevel10k/powerlevel10k.zsh-theme
@@ -451,7 +458,7 @@ alias psync="rsync -a --no-i-r --info=progress2 --partial"
 alias num_frames="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=nb_frames"
 alias frame_rate="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries stream=r_frame_rate"
 alias timestamps="ffprobe -v error -select_streams v:0 -of csv=p=0 -show_entries frame=coded_picture_number,pts_time"
-alias tempssh="ssh -o UserKnownHostsFile=/dev/null"
+alias tempssh="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 alias ffprobe="ffprobe -hide_banner"
 
 export NVIMRC=~/.config/nvim/init.lua
@@ -459,7 +466,6 @@ export EDITOR=nvim
 export VISUAL=nvim
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
-[ "${HOST##*internal*}" ] || export iterm2_hostname="$(hostname -f | sed -E 's/\.internal//')"
 [ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 [ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
