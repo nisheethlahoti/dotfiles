@@ -75,7 +75,7 @@ keymap('n', 'U', require('undotree').open, { desc = 'Toggle undo tree' })
 
 -- Directory/file diff via :DiffTool (also replaces `nvim -d` for git difftool)
 vim.cmd.packadd('nvim.difftool')
-require('difftool')  -- Warm vim.loader cache so plugin/difftool.lua's deferred require works
+require('difftool') -- Warm vim.loader cache so plugin/difftool.lua's deferred require works
 
 -- Commands to change directory to current file's and back to global
 keymap('n', '<Leader>cd', ':lcd %:p:h | pwd<CR>', { desc = 'Change directory to file' })
@@ -350,7 +350,7 @@ require('lazy').setup {
     {
         'mason-org/mason-lspconfig.nvim',    -- Configs for LSP servers
         dependencies = { 'mason-org/mason.nvim', 'neovim/nvim-lspconfig' },
-        opts = { ensure_installed = { 'clangd', 'pyright', 'ruff', 'lua_ls', 'jsonls', 'tombi' } },
+        opts = { ensure_installed = { 'clangd', 'pyrefly', 'ruff', 'lua_ls', 'jsonls', 'tombi' } },
     },
 
     -- AI
@@ -419,7 +419,7 @@ autocmd('LspAttach', {
         assert(client.server_capabilities, 'LSP client has no server capabilities')
         client.server_capabilities.semanticTokensProvider = nil -- Disable semantic tokens
 
-        -- Server-specific: disable ruff's hover in favor of pyright
+        -- Server-specific: disable ruff's hover in favor of pyrefly
         if client.name == 'ruff' then client.server_capabilities.hoverProvider = false end
 
         local function map_to(key, method, cmd)
