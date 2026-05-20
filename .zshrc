@@ -466,6 +466,7 @@ export EDITOR=nvim
 export VISUAL=nvim
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+export COLORTERM=truecolor
 [ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 [ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
