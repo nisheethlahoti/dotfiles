@@ -502,5 +502,9 @@ setopt C_BASES                 # print hex/oct numbers as 0xFF/077 instead of 16
 eval "$(atuin init zsh --disable-up-arrow)"  # Initialize atuin history
 export VIDFLAGS=(-b:v 0 -crf 18 -profile:v high444 -preset veryfast -tune zerolatency -movflags +faststart)
 
-# Activate base python env (needs to be done at the end since deactivate pops the path from there)
-[ -d ~/basepython/bin ] && source ~/basepython/bin/activate
+# Activate env if present, else base python env (needs to be done at the end since deactivate pops the path from there)
+if [ -f .venv/bin/activate ] ; then
+  source .venv/bin/activate
+elif [ -d ~/basepython/bin ] ; then
+  source ~/basepython/bin/activate
+fi
