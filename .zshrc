@@ -280,11 +280,7 @@ zle_highlight=('paste:none')   # disable highlighting of text pasted into the co
 HISTSIZE=1000000000                        # infinite command history
 SAVEHIST=1000000000                        # infinite command history
 
-bindkey -v  # enable vim keymap
-
-autoload -Uz add-zle-hook-widget
-_vi_cursor() { printf '\e[%s q' $([[ $KEYMAP = vicmd ]] && echo 2 || echo 6) }
-add-zle-hook-widget zle-keymap-select _vi_cursor
+bindkey -e  # enable emacs keymap
 
 # WezTerm shell integration (semantic OSC 133 markers).
 for _wt in /Applications/WezTerm.app/Contents/Resources/wezterm.sh /etc/profile.d/wezterm.sh; do
@@ -305,16 +301,16 @@ z4h source $Z4H_DIR/Aloxaf/fzf-tab/fzf-tab.zsh  # load fzf-tab-complete
 bindkey -s '^[[5~' ''
 bindkey -s '^[[6~' ''
 
+# Bind all common variants of home and end keys to the appropriate widgets.
+for _khome in '^[[H' '^[OH' '^[[1~' ; do bindkey $_khome beginning-of-line ; done
+for _kend  in '^[[F' '^[OF' '^[[4~' ; do bindkey $_kend  end-of-line       ; done
+
 bindkey '^[[A'    z4h-up-line-or-history-local            # up         prev command in local history
 bindkey '^[[B'    z4h-down-line-or-history-local          # down       next command in local history
 bindkey '^?'      backward-delete-char                    # bs         delete one char backward
-bindkey '^[[1;5C' forward-word                            # ctrl+right go forward one word
-bindkey '^[[1;5D' backward-word                           # ctrl+left  go backward one word
-bindkey '^W'      backward-kill-word                      # ctrl+w     delete previous word
 bindkey '^[[1;5A' up-line-or-history                      # ctrl+up    prev cmd in global history
 bindkey '^[[1;5B' down-line-or-history                    # ctrl+down  next cmd in global history
 bindkey '^E'      _expand_alias                           # ctrl+E     expand alias
-bindkey '^ '      end-of-line                             # ctrl+space go to the end of line
 bindkey '^[[1;2D' z4h-cd-back                             # ⇧+left     cd into the prev directory
 bindkey '^[[1;2C' z4h-cd-forward                          # ⇧+right    cd into the next directory
 bindkey '^[[1;2A' z4h-cd-up                               # ⇧+up       cd ..
@@ -322,11 +318,10 @@ bindkey '^[[1;2B' fzf-cd-widget                           # ⇧+down     fzf cd
 bindkey '\t'      fzf-tab-complete                        # tab        fzf-tab completion
 bindkey '^F'      complete-file                           # ctrl+f     fzf file completion
 bindkey '^T'      fzf-completion                          # ctrl+t     default fzf completion
-bindkey -M vicmd  'K'   run-help                          # normal-K   help for the cmd at cursor
 
 # Tell zsh-autosuggestions how to handle different widgets.
 typeset -g ZSH_AUTOSUGGEST_EXECUTE_WIDGETS=()
-typeset -g ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line vi-end-of-line vi-add-eol)
+typeset -g ZSH_AUTOSUGGEST_ACCEPT_WIDGETS=(end-of-line)
 typeset -g ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(
   history-search-forward
   history-search-backward
@@ -341,17 +336,7 @@ typeset -g ZSH_AUTOSUGGEST_CLEAR_WIDGETS=(
   fzf-tab-complete
   complete-file
 )
-typeset -g ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(
-  forward-word
-  vi-forward-word
-  vi-forward-word-end
-  vi-forward-blank-word
-  vi-forward-blank-word-end
-  vi-find-next-char
-  vi-find-next-char-skip
-  forward-char            # right arrow accepts a single character; press end to accept to the end
-  vi-forward-char
-)
+typeset -g ZSH_AUTOSUGGEST_PARTIAL_ACCEPT_WIDGETS=(forward-word forward-char)
 typeset -g ZSH_AUTOSUGGEST_IGNORE_WIDGETS=(
   orig-\*
   beep

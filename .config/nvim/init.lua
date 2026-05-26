@@ -360,7 +360,7 @@ require('lazy').setup {
             suggestion = {
                 auto_trigger = true,
                 keymap = {
-                    accept = '<C-space>', accept_word = '<C-right>', prev = '<C-up>', next = '<C-down>',
+                    accept = '<End>', accept_word = '<M-f>', prev = '<M-Up>', next = '<M-Down>',
                 },
             },
             panel = { enabled = false },
