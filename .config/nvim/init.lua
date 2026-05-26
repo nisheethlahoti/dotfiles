@@ -20,12 +20,11 @@ vim.o.shiftwidth = 4                    -- No. of spaces to use for each step of
 vim.o.inccommand = 'split'              -- Show effects of a command incrementally as you type
 vim.o.undofile = true                   -- Keep an undo file (undo changes after closing)
 vim.o.number = true                     -- Display every line's number
-vim.o.mouse = 'a'                       -- Enable use of the mouse like a normal application
 vim.o.wrap = false                      -- Disable word wrap
 vim.o.scrolloff = 5                     -- Min number of screen lines to keep around the cursor
 vim.o.sidescroll = 5                    -- Min number of characters to keep on screen
-vim.opt.lcs:append('extends:>')         -- Show marker if line extends beyond screen
-vim.opt.matchpairs:append('<:>')        -- Use '%' to navigate between '<' and '>'
+vim.opt.lcs:append('extends:@')         -- Show marker if line extends beyond screen
+vim.o.list = true                       -- Show whitespace characters and line-extend markers
 vim.o.foldenable = false                -- Folds off by default
 vim.o.foldmethod = 'expr'               -- Fold according to given expression (treesitter)
 vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
@@ -79,16 +78,6 @@ keymap('n', '<Leader>cD', ':exe "lcd" getcwd(-1, -1) | pwd<CR>',
 -- Delete buffer without destroying window layout
 command('Bdelete', 'bp | bd<bang>#', { bang = true, desc = 'Delete buffer preserving window layout' })
 
--- Commands to do the intended thing on overly common typos
-command('W', 'w', {})
-command('Q', 'q<bang>', { bang = true })
-command('Wq', 'wq', {})
-command('Qa', 'qa<bang>', { bang = true })
-
--- Commands for editing, help, and terminal in new vertical window
-command('E', 'vert new <args>', { nargs = '?', complete = 'file' })
-command('Term', 'vsplit | term', { desc = 'Open terminal in vertical split window' })
-
 -- Keymaps for browsing quickfix list
 keymap('', '<Leader>q', '<cmd>copen<CR>', { desc = 'Open quickfix list' })
 
@@ -105,25 +94,15 @@ autocmd('BufWinEnter', {
             col = math.floor(0.1 * vim.o.columns),
             height = math.floor(0.8 * vim.o.lines),
             width = math.floor(0.8 * vim.o.columns),
-            border = 'single',
         })
         vim.api.nvim_win_close(win, true)
         keymap('n', '<Esc>', vim.cmd.q, { buf = args.buf, silent = true, desc = 'Close popup' })
     end,
 })
 
--- Convert binary file to readable bytes output and vice-versa
-keymap('', '<Leader>x', function()
-    vim.bo.binary = not vim.bo.binary
-    vim.cmd('%!xxd' .. (vim.bo.binary and ' -r' or ''))
-end, { desc = 'Toggle binary/hex view' })
-
 -- Set wrap only for certain file types
 local wrap_ft = { 'text', 'markdown' }
 autocmd('FileType', { callback = function(e) vim.wo.wrap = vim.list_contains(wrap_ft, e.match) end })
-
--- Color order in 16-color (i.e. cterm color #1 is Red, #2 is Green, etc.)
-local colors = { 'Red', 'Green', 'Yellow', 'Blue', 'Magenta', 'Cyan' }
 
 -- Setup plugins
 require('lazy').setup {
