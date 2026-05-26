@@ -52,12 +52,6 @@ vim.g.python3_host_prog = vim.env.HOME .. '/basepython/bin/python'
 command('DiffOrig',
     'vnew | set buftype=nofile | read ++edit # | 0d_ | diffthis | wincmd p | diffthis', {})
 
--- Moving between windows
-for key in vim.iter({ 'h', 'j', 'k', 'l' }) do
-    keymap('t', '<C-' .. key .. '>', '<C-\\><C-n><C-w>' .. key, { desc = 'Move in direction ' .. key })
-    keymap('', '<C-' .. key .. '>', '<C-w>' .. key, { desc = 'Move in direction ' .. key })
-end
-
 -- For tmux-like zooming
 keymap('', '<Leader>t', ':tab split<CR>', { desc = 'Make new tab with just this window' })
 keymap('', '<Leader>T', ':tabclose<CR>', { desc = 'Close tab' })
@@ -138,6 +132,7 @@ require('lazy').setup {
     'tpope/vim-repeat',                -- Use '.' with several plugins
     'jeetsukumaran/vim-indentwise',    -- Motions over indented blocks
     'michaeljsmith/vim-indent-object', -- Indent textobjects
+    'christoomey/vim-tmux-navigator',  -- Navigate between tmux panes and vim splits seamlessly
 
     -- General
     {

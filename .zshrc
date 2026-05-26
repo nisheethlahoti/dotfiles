@@ -39,6 +39,7 @@ function update-all() {
   update-pkgs
   nvim --headless "+Lazy! sync" +qa
   uv tool upgrade --all
+  ~/.tmux/plugins/tpm/bin/update_plugins all
 
   ! [ -f ~/.zsh_history.bak ] ||
 
@@ -288,9 +289,9 @@ for _wt in /Applications/WezTerm.app/Contents/Resources/wezterm.sh /etc/profile.
 done
 unset _wt
 
-FZF_COMPLETION_TRIGGER=''                                # ctrl-t goes to fzf whenever possible
-z4h source ~/.fzf.zsh                                    # load fzf
-bindkey -r '^[c'                                         # remove unwanted binding
+z4h source ~/.fzf.zsh                           # load fzf
+bindkey -r '^[c'                                # remove binding to fzf-cd-widget
+bindkey -r '^T'                                 # remove binding to fzf-complete
 
 FZF_TAB_PREFIX=                                 # remove '·'
 FZF_TAB_SHOW_GROUP=brief                        # show group headers only for duplicate options
@@ -317,7 +318,6 @@ bindkey '^[[1;2A' z4h-cd-up                               # ⇧+up       cd ..
 bindkey '^[[1;2B' fzf-cd-widget                           # ⇧+down     fzf cd
 bindkey '\t'      fzf-tab-complete                        # tab        fzf-tab completion
 bindkey '^F'      complete-file                           # ctrl+f     fzf file completion
-bindkey '^T'      fzf-completion                          # ctrl+t     default fzf completion
 
 # Tell zsh-autosuggestions how to handle different widgets.
 typeset -g ZSH_AUTOSUGGEST_EXECUTE_WIDGETS=()
@@ -409,6 +409,9 @@ POWERLEVEL9K_TIME_UPDATE_ON_COMMAND=true
 RESIDUALS='time|command_execution_time'
 function p10k-on-pre-prompt() { p10k display "1/left/^($RESIDUALS)|1/right"=show "1/left/($RESIDUALS)"=hide }
 function p10k-on-post-prompt() { p10k display "1/left/^($RESIDUALS)|1/right"=hide "1/left/($RESIDUALS)"=show }
+
+# No need to show context segment inside tmux as it is already present in statusline
+[ -n "$TMUX" ] && POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=("${(@)POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS:#context}")
 
 POWERLEVEL9K_SHORTEN_STRATEGY=truncate_middle  # Default truncate_to_unique is nice but hangs on super-large dirs
 z4h source $Z4H_DIR/romkatv/powerlevel10k/powerlevel10k.zsh-theme
