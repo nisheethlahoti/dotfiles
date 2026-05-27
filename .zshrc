@@ -353,14 +353,7 @@ fi
 #   -F   exit if there is less than one page of content
 #   -M   show more info at the bottom prompt line
 #   -x4  tabs are 4 spaces wide instead of 8
-#   --mouse  enable mouse support in tmux, but breaks selections
-if [ -n "$TMUX" ]; then
-    export LESS="-iRFMx4 --mouse"
-else
-    export LESS="-iRFMx4"
-fi
-
-# Export variables.
+export LESS="-iRFMx4 --mouse"
 export PAGER=less
 
 typeset -gaU cdpath fpath mailpath path
@@ -430,10 +423,8 @@ if [[ -f /usr/bin/ffmpeg ]] ; then
   FFMPEG=/usr/bin/ffmpeg
 elif [[ -f /opt/homebrew/bin/ffmpeg ]] ; then
   FFMPEG=/opt/homebrew/bin/ffmpeg
-else
-  FFMPEG=ffmpeg
 fi
-alias ffmpeg="$FFMPEG -hide_banner"
+alias ffmpeg="${FFMPEG:-ffmpeg} -hide_banner"
 
 alias cfg="GIT_DIR=$HOME/.dotfiles.git"
 alias psync="rsync -a --no-i-r --info=progress2 --partial"
@@ -446,14 +437,9 @@ alias ffprobe="ffprobe -hide_banner"
 export NVIMRC=~/.config/nvim/init.lua
 export EDITOR=nvim
 export VISUAL=nvim
-export LANG=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
 export COLORTERM=truecolor
-[ -d ~/.emacs.d ] && path=(~/.emacs.d/bin $path)
 [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
-[ -d ~/.cargo/bin ] && path=(~/.cargo/bin $path)
 [ -f ~/.additional.zsh ] && source ~/.additional.zsh
-[ ${path[(i)$HOME/.local/bin]} -gt ${#path} ] && path=(~/.local/bin $path)
 
 # Enable decent options. See http://zsh.sourceforge.net/Doc/Release/Options.html.
 emulate zsh                    # restore default options just in case something messed them up
