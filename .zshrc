@@ -277,12 +277,6 @@ SAVEHIST=1000000000                        # infinite command history
 
 bindkey -e  # enable emacs keymap
 
-# WezTerm shell integration (semantic OSC 133 markers).
-for _wt in /Applications/WezTerm.app/Contents/Resources/wezterm.sh /etc/profile.d/wezterm.sh; do
-  [[ -r $_wt ]] && { source $_wt; break }
-done
-unset _wt
-
 z4h source ~/.fzf.zsh                           # load fzf
 bindkey -r '^[c'                                # remove binding to fzf-cd-widget
 bindkey -r '^T'                                 # remove binding to fzf-complete
@@ -379,11 +373,6 @@ zstyle ':completion::complete:*'        cache-path      ${XDG_CACHE_HOME:-$HOME/
 autoload -Uz bashcompinit
 bashcompinit
 
-# Enable iTerm2 shell integration if available.
-if [[ $TERM_PROGRAM == iTerm.app || $LC_TERMINAL == iTerm2 && -e ~/.iterm2_shell_integration.zsh ]]; then
-  z4h source ~/.iterm2_shell_integration.zsh
-fi
-
 # Initialize prompt. Type `p10k configure` or edit .p10k.zsh to customize it.
 [[ -e ${ZDOTDIR:-~}/.p10k.zsh ]] && z4h source ${ZDOTDIR:-~}/.p10k.zsh
 
@@ -400,6 +389,7 @@ function p10k-on-post-prompt() { p10k display "1/left/^($RESIDUALS)|1/right"=hid
 # No need to show context segment inside tmux as it is already present in statusline
 [ -n "$TMUX" ] && POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=("${(@)POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS:#context}")
 
+typeset -g POWERLEVEL9K_TERM_SHELL_INTEGRATION=true
 POWERLEVEL9K_SHORTEN_STRATEGY=truncate_middle  # Default truncate_to_unique is nice but hangs on super-large dirs
 z4h source $Z4H_DIR/romkatv/powerlevel10k/powerlevel10k.zsh-theme
 
