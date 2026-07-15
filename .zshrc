@@ -39,6 +39,7 @@ function update-all() {
   update-pkgs
   nvim --headless "+Lazy! sync" +qa
   uv tool upgrade --all
+  claude update
   ~/.tmux/plugins/tpm/bin/update_plugins all
 
   ! [ -f ~/.zsh_history.bak ] ||
