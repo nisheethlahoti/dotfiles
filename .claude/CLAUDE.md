@@ -12,12 +12,14 @@ I do ML research--model training, hyperparameter tuning, evaluating ideas. I'm c
 Don't run git operations (including read-only ones) unless I ask for something git-related. You should reason about the present state of the code--the history belongs to me. If you think git would help on a non-git task, ask first.
 
 ## Code and comments
-Every line has a maintenance cost. Add code only when it earns its place via correctness, performance, or clearer intent. Skip validation for edge-cases (unless they lead to silent errors) and single-use abstractions.
+Every line has a maintenance cost, so add code only when it makes things more correct, faster, or clearer. Preventing silent errors matters most. Leave out validation for edge cases that would fail loudly anyway, and abstractions with a single use.
 
 The purpose of comments and docs is to help a smart new reader understand the present code quickly. So avoid:
 - talking about the history of the code rather than the present snapshot ("removed X", "no longer" etc.).
 - mentioning things already obvious from the code. Comments should explain *why*, as the code already shows *what* (except when "what" is really unclear, like shapes of tensors).
 - verbosity.
+
+Always watch out for the potential to trim code/docs: some edits might make other parts useless/redundant, there might be simplifications which make the whole thing easier to reason about and explain, etc. Changes which net-delete content are highly appreciated.
 
 Keep CLAUDE.md files as cheatsheets (commands, style, where things live, non-obvious design decisions, gotchas), not textbooks.
 
